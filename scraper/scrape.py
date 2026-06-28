@@ -55,55 +55,27 @@ BROWSER_HEADERS = {
     "Accept-Language": "en-US,en;q=0.9",
 }
 
-# JSON schema the model must fill. Nullable via anyOf so missing specs come back
-# as null instead of guesses. additionalProperties:false is required.
-def _nullable(schema):
-    return {"anyOf": [schema, {"type": "null"}]}
-
-EXTRACTION_SCHEMA = {
-    "type": "object",
-    "additionalProperties": False,
-    "properties": {
-        "brand": _nullable({"type": "string"}),
-        "model": _nullable({"type": "string"}),
-        "version": _nullable({"type": "integer"}),
-        "release_year": _nullable({"type": "integer"}),
-        "archetype": _nullable({"type": "string", "enum": [
-            "carbon_racer", "tempo", "daily_trainer", "stability",
-            "max_cushion", "trail", "budget", "unknown",
-        ]}),
-        "gender": _nullable({"type": "string", "enum": ["m", "w", "unisex"]}),
-        "weight_g": _nullable({"type": "number"}),
-        "stack_heel_mm": _nullable({"type": "number"}),
-        "stack_forefoot_mm": _nullable({"type": "number"}),
-        "drop_mm": _nullable({"type": "number"}),
-        "has_plate": _nullable({"type": "boolean"}),
-        "plate_material": _nullable({"type": "string", "enum": ["carbon", "nylon", "none"]}),
-        "foam_name": _nullable({"type": "string"}),
-        "lug_depth_mm": _nullable({"type": "number"}),
-        "width_options": _nullable({"type": "array", "items": {"type": "string"}}),
-        "has_medial_post": _nullable({"type": "boolean"}),
-        "msrp_usd": _nullable({"type": "number"}),
-        "image_url": _nullable({"type": "string"}),
-        "notes": _nullable({"type": "string"}),
-    },
-    "required": [
-        "brand", "model", "version", "release_year", "archetype", "gender",
-        "weight_g", "stack_heel_mm", "stack_forefoot_mm", "drop_mm",
-        "has_plate", "plate_material", "foam_name", "lug_depth_mm",
-        "width_options", "has_medial_post", "msrp_usd", "image_url", "notes",
-    ],
-}
+# Keys the model returns (source_url + data_confidence are computed locally).
+EXTRACT_KEYS = [
+    "brand", "model", "version", "release_year", "archetype", "gender",
+    "weight_g", "stack_heel_mm", "stack_forefoot_mm", "drop_mm",
+    "has_plate", "plate_material", "foam_name", "lug_depth_mm",
+    "width_options", "has_medial_post", "msrp_usd", "image_url", "notes",
+]
 
 SYSTEM = (
-    "You extract running-shoe specifications from web page text into a strict "
-    "schema. Only use facts present in the text — never guess. If a field isn't "
-    "stated, return null for it. Infer `archetype` from the specs you do find "
-    "(carbon_racer: plate + stack>=35mm + weight<240g; max_cushion: stack>=38mm "
-    "& heavy; trail: lugged outsole; stability: medial post/guide rails; "
-    "daily_trainer otherwise; unknown if too little data). Use grams for weight, "
-    "millimetres for stack/drop/lug, USD for price. Put anything noteworthy or "
-    "uncertain in `notes`."
+    "You extract running-shoe specifications from web page text. "
+    "Respond with ONLY a single JSON object — no markdown, no code fences, no prose. "
+    "Use exactly these keys: " + ", ".join(EXTRACT_KEYS) + ". "
+    "Only use facts present in the text — never guess. Use null for any field not stated. "
+    "Numbers are plain numbers (grams for weight; millimetres for stack/drop/lug; USD for price). "
+    "`width_options` is an array of strings. `has_plate`/`has_medial_post` are booleans. "
+    "`plate_material` is one of carbon/nylon/none. `gender` is one of m/w/unisex. "
+    "Infer `archetype` (one of carbon_racer, tempo, daily_trainer, stability, max_cushion, "
+    "trail, budget, unknown) from the specs: carbon_racer = plate + stack>=35mm + weight<240g; "
+    "max_cushion = stack>=38mm and heavy; trail = lugged outsole; stability = medial post/guide "
+    "rails; daily_trainer otherwise; unknown if too little data. "
+    "Put anything noteworthy or uncertain in `notes`."
 )
 
 
@@ -127,16 +99,19 @@ def fetch_page_text(url):
 
 
 def extract_specs(client, page_text):
-    """Ask Claude to fill the schema from page text. Returns a dict."""
+    """Ask Claude to extract specs as JSON from page text. Returns a dict."""
     resp = client.messages.create(
         model=MODEL,
         max_tokens=2000,
         system=SYSTEM,
         messages=[{"role": "user", "content": page_text}],
-        output_config={"format": {"type": "json_schema", "schema": EXTRACTION_SCHEMA}},
     )
     text = next(b.text for b in resp.content if b.type == "text")
-    return json.loads(text)
+    # Be tolerant of stray prose / code fences: parse the outermost JSON object.
+    start, end = text.find("{"), text.rfind("}")
+    if start == -1 or end == -1:
+        raise ValueError(f"no JSON object in response: {text[:200]}")
+    return json.loads(text[start:end + 1])
 
 
 def to_row(data, url):
