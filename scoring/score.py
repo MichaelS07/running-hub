@@ -1,19 +1,20 @@
-"""Compute v1 RunHub scores from data/shoes-seed.csv.
+"""Compute v2 RunHub scores from data/shoes-seed.csv.
 
-This is the methodology made real — but a *spec-based* first pass. It scores
-each shoe on three objective signals we can trust from specs alone, normalized
-within the shoe's archetype (never across), then weights them per archetype:
+Six criteria, each normalized within the shoe's archetype (never across), then
+weighted per archetype. Built on real lab metrics now in the CSV, with graceful
+handling of gaps (a missing metric scores neutral, not zero):
 
-  - weight        (lighter is better, within category)
-  - cushioning    (heel stack, more is better)
-  - responsiveness (plate + premium-foam proxy)
+  ride        energy_return_pct           (higher better)
+  cushioning  stack_heel_mm               (higher better)
+  weight      weight_g                    (lower better)
+  comfort_fit breathability + widths + heel counter
+  durability  durability_1to5             (higher better; sparse -> neutral)
+  expert      runrepeat_score             (RunRepeat's overall score, 0-100)
 
-Ride/durability/fit in the full methodology need lab metrics (energy return,
-durability, breathability) that currently live in the free-text `notes`. Once
-those are structured columns, this engine extends to the full six criteria with
-no change to the shape below.
+`expert` is a transparent sentiment input, kept to a moderate weight so the
+ranking leads with our own spec-based methodology rather than echoing RunRepeat.
 
-No API key or network needed — pure local computation.
+No API key or network needed.
 
     python3 score.py
 """
@@ -24,62 +25,80 @@ from pathlib import Path
 SEED_CSV = Path(__file__).resolve().parent.parent / "data" / "shoes-seed.csv"
 SCORES_CSV = Path(__file__).resolve().parent.parent / "data" / "scores.csv"
 
-# Per-archetype criterion weights (must sum to 1.0). Different shoes, different jobs.
+CRITERIA = ["ride", "cushioning", "weight", "comfort_fit", "durability", "expert"]
+
+# Per-archetype weights (each row sums to 1.0). Different shoes, different jobs.
 WEIGHTS = {
-    "daily_trainer": {"weight": 0.35, "cushion": 0.35, "responsiveness": 0.30},
-    "carbon_racer":  {"weight": 0.35, "cushion": 0.15, "responsiveness": 0.50},
-    "tempo":         {"weight": 0.35, "cushion": 0.20, "responsiveness": 0.45},
-    "max_cushion":   {"weight": 0.20, "cushion": 0.55, "responsiveness": 0.25},
-    "stability":     {"weight": 0.30, "cushion": 0.40, "responsiveness": 0.30},
-    "trail":         {"weight": 0.30, "cushion": 0.35, "responsiveness": 0.35},
+    "daily_trainer": dict(ride=.18, cushioning=.18, weight=.15, comfort_fit=.14, durability=.15, expert=.20),
+    "carbon_racer":  dict(ride=.28, cushioning=.08, weight=.22, comfort_fit=.07, durability=.05, expert=.30),
+    "tempo":         dict(ride=.25, cushioning=.12, weight=.20, comfort_fit=.08, durability=.10, expert=.25),
+    "max_cushion":   dict(ride=.12, cushioning=.30, weight=.08, comfort_fit=.15, durability=.15, expert=.20),
+    "stability":     dict(ride=.12, cushioning=.18, weight=.12, comfort_fit=.23, durability=.15, expert=.20),
+    "trail":         dict(ride=.12, cushioning=.13, weight=.12, comfort_fit=.13, durability=.25, expert=.25),
 }
-DEFAULT_WEIGHTS = {"weight": 0.34, "cushion": 0.33, "responsiveness": 0.33}
-
-PREMIUM_FOAM = [
-    "peba", "pebax", "pwrrun pb", "pwrrun hg", "zoomx", "lightstrike pro",
-    "nitro", "ff turbo", "ff blast", "supercritical", "dreamstrike", "enerzy",
-]
+DEFAULT_WEIGHTS = {c: 1 / len(CRITERIA) for c in CRITERIA}
 
 
-def responsiveness_raw(row):
-    """Proxy for ride/pop from plate + foam, pending real lab metrics."""
-    score = 0.0
-    if str(row.get("has_plate", "")).lower() == "true":
-        score += 2.0
-        if (row.get("plate_material") or "").lower() == "carbon":
-            score += 1.0
-    foam = (row.get("foam_name") or "").lower()
-    if any(k in foam for k in PREMIUM_FOAM):
-        score += 2.0
-    return score
+def num(v):
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return None
 
 
-def pct_scores(values, higher_better=True):
-    """Average-rank percentile -> 0-10, within a group. Ties share a rank."""
-    n = len(values)
+def comfort_fit_raw(row):
+    """Blend breathability, fit-width availability, and heel-counter into 0-10."""
+    parts = []
+    b = num(row.get("breathability_1to5"))
+    if b is not None:
+        parts.append(b / 5 * 10)
+    hc = num(row.get("heel_counter_1to5"))
+    if hc is not None:
+        parts.append(hc / 5 * 10)
+    widths = [w for w in (row.get("width_options") or "").split(";") if w.strip()]
+    parts.append(min(len(widths), 4) / 4 * 10)
+    return sum(parts) / len(parts) if parts else None
+
+
+def raw_value(row, criterion):
+    if criterion == "ride":
+        return num(row.get("energy_return_pct"))
+    if criterion == "cushioning":
+        return num(row.get("stack_heel_mm"))
+    if criterion == "weight":
+        return num(row.get("weight_g"))
+    if criterion == "comfort_fit":
+        return comfort_fit_raw(row)
+    if criterion == "durability":
+        return num(row.get("durability_1to5"))
+    if criterion == "expert":
+        return num(row.get("runrepeat_score"))
+    return None
+
+
+def pct_within(values, higher_better=True):
+    """Average-rank percentile -> 0-10 within a group. None -> 5.0 (neutral)."""
+    present = [v for v in values if v is not None]
+    n = len(present)
     out = []
-    for x in values:
-        if n == 1:
+    for v in values:
+        if v is None or n <= 1:
             out.append(5.0)
             continue
         if higher_better:
-            less = sum(1 for v in values if v < x)
+            less = sum(1 for x in present if x < v)
         else:
-            less = sum(1 for v in values if v > x)
-        equal = sum(1 for v in values if v == x)
+            less = sum(1 for x in present if x > v)
+        equal = sum(1 for x in present if x == v)
         pct = (less + (equal - 1) / 2) / (n - 1)
         out.append(round(pct * 10, 1))
     return out
 
 
 def value_labels(scores, prices):
-    """quality-per-dollar percentile -> Great value / Fair / Premium."""
     ratios = [s / p if p else 0 for s, p in zip(scores, prices)]
-    pcts = pct_scores(ratios, higher_better=True)
-    labels = []
-    for p in pcts:
-        labels.append("Great value" if p >= 6.7 else "Premium" if p <= 3.3 else "Fair")
-    return labels
+    pcts = pct_within(ratios, higher_better=True)
+    return ["Great value" if p >= 6.7 else "Premium" if p <= 3.3 else "Fair" for p in pcts]
 
 
 def load():
@@ -96,29 +115,34 @@ def score():
     results = []
     for arch, shoes in by_arch.items():
         w = WEIGHTS.get(arch, DEFAULT_WEIGHTS)
-        weight_s = pct_scores([float(s["weight_g"]) for s in shoes], higher_better=False)
-        cushion_s = pct_scores([float(s["stack_heel_mm"]) for s in shoes], higher_better=True)
-        resp_s = pct_scores([responsiveness_raw(s) for s in shoes], higher_better=True)
+        # 0-10 sub-scores per criterion, normalized within this archetype.
+        subs = {}
+        for c in CRITERIA:
+            raws = [raw_value(s, c) for s in shoes]
+            subs[c] = pct_within(raws, higher_better=(c != "weight"))
 
-        composites = []
-        for s, ws, cs, rs in zip(shoes, weight_s, cushion_s, resp_s):
-            runhub = round((ws * w["weight"] + cs * w["cushion"] + rs * w["responsiveness"]) * 10)
+        composites, completeness = [], []
+        for i, s in enumerate(shoes):
+            runhub = round(sum(subs[c][i] * w[c] for c in CRITERIA) * 10)
             composites.append(runhub)
+            present = sum(1 for c in CRITERIA if raw_value(s, c) is not None)
+            completeness.append("high" if present >= 5 else "medium" if present >= 3 else "low")
 
-        prices = [float(s["msrp_usd"]) if s["msrp_usd"] else 0 for s in shoes]
+        prices = [num(s["msrp_usd"]) or 0 for s in shoes]
         values = value_labels(composites, prices)
 
         ranked = sorted(
-            zip(shoes, composites, weight_s, cushion_s, resp_s, values),
-            key=lambda t: t[1], reverse=True,
+            range(len(shoes)),
+            key=lambda i: composites[i], reverse=True,
         )
-        for rank, (s, runhub, ws, cs, rs, val) in enumerate(ranked, 1):
+        for rank, i in enumerate(ranked, 1):
+            s = shoes[i]
             results.append({
                 "brand": s["brand"], "model": s["model"], "version": s["version"],
-                "archetype": arch,
-                "runhub_score": runhub, "category_rank": rank,
-                "score_weight": ws, "score_cushion": cs, "score_responsiveness": rs,
-                "value_rating": val, "msrp_usd": s["msrp_usd"],
+                "archetype": arch, "runhub_score": composites[i], "category_rank": rank,
+                **{f"score_{c}": subs[c][i] for c in CRITERIA},
+                "value_rating": values[i], "score_confidence": completeness[i],
+                "msrp_usd": s["msrp_usd"],
             })
     return results
 
@@ -129,22 +153,25 @@ def report(results):
         by_arch.setdefault(r["archetype"], []).append(r)
 
     order = ["carbon_racer", "tempo", "daily_trainer", "stability", "max_cushion", "trail"]
+    hdr = (f"  {'#':<3}{'shoe':<26}{'SCORE':<7}{'ride':<6}{'cush':<6}{'wt':<5}"
+           f"{'fit':<6}{'dur':<6}{'exp':<6}{'value':<12}")
     for arch in [a for a in order if a in by_arch] + [a for a in by_arch if a not in order]:
         shoes = sorted(by_arch[arch], key=lambda r: r["category_rank"])
         print(f"\n  {arch.replace('_', ' ').upper()}")
-        print(f"  {'#':<3}{'shoe':<28}{'score':<7}{'wt':<5}{'cush':<6}{'resp':<6}{'value':<12}${'msrp'}")
-        print("  " + "-" * 74)
+        print(hdr)
+        print("  " + "-" * 82)
         for r in shoes:
-            name = f"{r['brand']} {r['model']} {r['version']}".strip()
-            print(f"  {r['category_rank']:<3}{name:<28}{r['runhub_score']:<7}"
-                  f"{r['score_weight']:<5}{r['score_cushion']:<6}{r['score_responsiveness']:<6}"
-                  f"{r['value_rating']:<12}${r['msrp_usd']}")
+            name = f"{r['brand']} {r['model']} {r['version']}".strip()[:25]
+            print(f"  {r['category_rank']:<3}{name:<26}{r['runhub_score']:<7}"
+                  f"{r['score_ride']:<6}{r['score_cushioning']:<6}{r['score_weight']:<5}"
+                  f"{r['score_comfort_fit']:<6}{r['score_durability']:<6}{r['score_expert']:<6}"
+                  f"{r['value_rating']:<12}")
 
 
 def write_csv(results):
-    cols = ["brand", "model", "version", "archetype", "runhub_score", "category_rank",
-            "score_weight", "score_cushion", "score_responsiveness",
-            "value_rating", "msrp_usd"]
+    cols = (["brand", "model", "version", "archetype", "runhub_score", "category_rank"]
+            + [f"score_{c}" for c in CRITERIA]
+            + ["value_rating", "score_confidence", "msrp_usd"])
     with SCORES_CSV.open("w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=cols)
         w.writeheader()
@@ -156,7 +183,7 @@ def main():
     report(results)
     write_csv(results)
     print(f"\n  Wrote {len(results)} scored shoes to {SCORES_CSV.name}")
-    print("  v1 = spec-based (weight, cushioning, plate/foam). Lab metrics next.")
+    print("  ride=energy return  cush=stack  wt=weight  fit=comfort/fit  dur=durability  exp=RunRepeat score")
 
 
 if __name__ == "__main__":
