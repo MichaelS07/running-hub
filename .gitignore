@@ -1,0 +1,22 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Env / secrets (affiliate keys, API tokens)
+.env
+.env.local
+*.key
+
+# Data dumps / scratch
+*.sqlite
+*.db
+data/raw/
+*.csv
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
