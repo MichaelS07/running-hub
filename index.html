@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RunHub — Every running shoe, scored</title>
+  <meta name="description" content="An opinionated, transparently scored database of running shoes. Every shoe rated within its category on weight, ride, cushioning, fit, durability and expert reviews." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="#top">Run<span>Hub</span></a>
+      <nav id="cat-nav" class="cat-nav"></nav>
+    </div>
+  </header>
+
+  <section class="hero" id="top">
+    <div class="wrap">
+      <h1>Every running shoe, <em>scored</em>.</h1>
+      <p class="lede">No marketing fluff. Each shoe is rated <strong>within its own category</strong> on six criteria — then ranked. The score is the whole point: transparent, consistent, and updated as the data grows.</p>
+      <div class="method">
+        <span><i class="dot"></i>Ride</span>
+        <span><i class="dot"></i>Cushioning</span>
+        <span><i class="dot"></i>Weight</span>
+        <span><i class="dot"></i>Comfort &amp; fit</span>
+        <span><i class="dot"></i>Durability</span>
+        <span><i class="dot"></i>Expert reviews</span>
+      </div>
+    </div>
+  </section>
+
+  <main class="wrap" id="catalog">
+    <p class="loading">Loading scores…</p>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>RunHub · scores are computed within each shoe category from lab specs and expert reviews. Methodology is public.</p>
+    </div>
+  </footer>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>
