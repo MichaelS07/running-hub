@@ -142,7 +142,7 @@ def score():
                 "archetype": arch, "runhub_score": composites[i], "category_rank": rank,
                 **{f"score_{c}": subs[c][i] for c in CRITERIA},
                 "value_rating": values[i], "score_confidence": completeness[i],
-                "msrp_usd": s["msrp_usd"],
+                "msrp_usd": s["msrp_usd"], "image_url": s.get("image_url", ""),
             })
     return results
 
@@ -171,7 +171,7 @@ def report(results):
 def write_csv(results):
     cols = (["brand", "model", "version", "archetype", "runhub_score", "category_rank"]
             + [f"score_{c}" for c in CRITERIA]
-            + ["value_rating", "score_confidence", "msrp_usd"])
+            + ["value_rating", "score_confidence", "msrp_usd", "image_url"])
     with SCORES_CSV.open("w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=cols)
         w.writeheader()

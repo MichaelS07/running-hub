@@ -75,10 +75,16 @@ body {
 /* shoe card */
 .card {
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--radius); padding: 18px 20px;
-  display: flex; flex-direction: column; gap: 14px;
+  border-radius: var(--radius); overflow: hidden;
+  display: flex; flex-direction: column;
 }
 .card.rank-1 { border-color: var(--accent); }
+.card-photo {
+  height: 158px; background: #eef1f5;
+  display: flex; align-items: center; justify-content: center;
+}
+.card-photo img { max-width: 86%; max-height: 86%; object-fit: contain; }
+.card-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; }
 .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
 .card-rank { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
 .card-name { font-family: "Space Grotesk", sans-serif; font-size: 18px; font-weight: 500; margin-top: 2px; }

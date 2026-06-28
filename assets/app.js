@@ -82,22 +82,29 @@ function card(row) {
     </div>`;
   }).join("");
 
+  const photo = row.image_url
+    ? `<div class="card-photo"><img src="${row.image_url}" alt="${name}" loading="lazy" /></div>`
+    : "";
+
   return `<article class="card ${row.category_rank === "1" ? "rank-1" : ""}">
-    <div class="card-top">
-      <div>
-        <div class="card-rank">#${row.category_rank} ${arch}</div>
-        <div class="card-name">${name}</div>
+    ${photo}
+    <div class="card-body">
+      <div class="card-top">
+        <div>
+          <div class="card-rank">#${row.category_rank} ${arch}</div>
+          <div class="card-name">${name}</div>
+        </div>
+        <div class="score-badge">
+          <div class="score-circle" style="border-color:${color};color:${color}">${score}</div>
+          <div class="score-label">score</div>
+        </div>
       </div>
-      <div class="score-badge">
-        <div class="score-circle" style="border-color:${color};color:${color}">${score}</div>
-        <div class="score-label">score</div>
+      <div class="bars">${bars}</div>
+      <div class="card-foot">
+        <span class="value-badge ${valueClass(row.value_rating)}">${row.value_rating}</span>
+        <span class="price">$<b>${row.msrp_usd}</b></span>
+        <a class="cta" href="#" data-shoe="${name}">Check price</a>
       </div>
-    </div>
-    <div class="bars">${bars}</div>
-    <div class="card-foot">
-      <span class="value-badge ${valueClass(row.value_rating)}">${row.value_rating}</span>
-      <span class="price">$<b>${row.msrp_usd}</b></span>
-      <a class="cta" href="#" data-shoe="${name}">Check price</a>
     </div>
   </article>`;
 }
