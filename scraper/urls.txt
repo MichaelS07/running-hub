@@ -1,8 +1,48 @@
 # One shoe URL per line. Lines starting with # are ignored.
-# Keep it to ~5 at a time so you can review each batch before the next.
-# These 5 are verified-fetchable RunRepeat pages — your first test batch.
-https://runrepeat.com/hoka-mach-6
-https://runrepeat.com/asics-novablast-5
-https://runrepeat.com/nike-pegasus-41
-https://runrepeat.com/saucony-endorphin-speed-4
+# All verified-fetchable RunRepeat pages. The scraper skips any URL already
+# in data/shoes-seed.csv, so it's safe to leave the whole list here and re-run.
+
+# --- daily trainers ---
+https://runrepeat.com/hoka-clifton-9
+https://runrepeat.com/asics-gel-nimbus-26
+https://runrepeat.com/saucony-ride-17
 https://runrepeat.com/brooks-ghost-16
+https://runrepeat.com/nike-pegasus-41
+https://runrepeat.com/adidas-supernova-rise
+https://runrepeat.com/mizuno-wave-rider-27
+https://runrepeat.com/puma-velocity-nitro-3
+https://runrepeat.com/hoka-mach-6
+
+# --- max cushion ---
+https://runrepeat.com/hoka-bondi-8
+https://runrepeat.com/brooks-glycerin-21
+https://runrepeat.com/asics-gel-nimbus-25
+https://runrepeat.com/saucony-triumph-22
+
+# --- stability ---
+https://runrepeat.com/asics-gel-kayano-31
+https://runrepeat.com/brooks-adrenaline-gts-23
+https://runrepeat.com/saucony-guide-17
+https://runrepeat.com/hoka-arahi-7
+
+# --- tempo / uptempo ---
+https://runrepeat.com/saucony-endorphin-speed-4
+https://runrepeat.com/adidas-adizero-boston-12
+https://runrepeat.com/asics-magic-speed-4
+https://runrepeat.com/puma-deviate-nitro-3
+
+# --- carbon racers ---
+https://runrepeat.com/nike-alphafly-3
+https://runrepeat.com/adidas-adizero-adios-pro-3
+https://runrepeat.com/saucony-endorphin-pro-4
+https://runrepeat.com/asics-metaspeed-sky-plus
+https://runrepeat.com/hoka-rocket-x-2
+
+# --- trail ---
+https://runrepeat.com/hoka-speedgoat-5
+https://runrepeat.com/salomon-speedcross-6
+https://runrepeat.com/brooks-cascadia-17
+https://runrepeat.com/saucony-peregrine-14
+
+# already scraped (kept for the catalog; auto-skipped on re-run)
+https://runrepeat.com/asics-novablast-5

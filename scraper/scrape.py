@@ -154,13 +154,30 @@ def load_urls(argv):
     return []
 
 
+def load_done_urls():
+    """source_urls already in the CSV, so we never scrape the same shoe twice."""
+    if not SEED_CSV.exists():
+        return set()
+    with SEED_CSV.open(newline="", encoding="utf-8") as f:
+        return {r["source_url"] for r in csv.DictReader(f) if r.get("source_url")}
+
+
 def main():
     urls = load_urls(sys.argv[1:])
     if not urls:
         print(f"No URLs. Add some to {URLS_FILE} or pass them as arguments.")
         return
-    if len(urls) > 5:
-        print(f"Note: {len(urls)} URLs queued — consider batches of ~5 to review as you go.")
+
+    done = load_done_urls()
+    already = [u for u in urls if u in done]
+    urls = [u for u in urls if u not in done]
+    if already:
+        print(f"Skipping {len(already)} URL(s) already in the CSV.")
+    if not urls:
+        print("All queued URLs are already scraped — nothing to do.")
+        return
+    if len(urls) > 10:
+        print(f"Note: {len(urls)} new URLs queued — this will take a few minutes.")
 
     client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY
     rows = []
