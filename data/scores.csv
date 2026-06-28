@@ -1,0 +1,32 @@
+brand,model,version,archetype,runhub_score,category_rank,score_weight,score_cushion,score_responsiveness,value_rating,msrp_usd
+Hoka,Mach 6,6,daily_trainer,82,1,10.0,7.5,6.9,Great value,140
+ASICS,Novablast,5,daily_trainer,82,2,7.5,10.0,6.9,Great value,150
+Mizuno,Wave Rider,27,daily_trainer,70,3,2.5,8.8,10.0,Great value,140
+PUMA,Velocity Nitro,3,daily_trainer,56,4,6.2,3.8,6.9,Fair,135
+Brooks,Ghost,16,daily_trainer,43,5,5.0,5.6,1.9,Fair,140
+Hoka,Clifton,9,daily_trainer,41,6,8.8,1.2,1.9,Fair,145
+Adidas,Supernova Rise,,daily_trainer,34,7,3.8,0.0,6.9,Premium,140
+Saucony,Ride,17,daily_trainer,25,8,0.0,5.6,1.9,Premium,140
+Nike,Pegasus,41,daily_trainer,19,9,1.2,2.5,1.9,Premium,140
+PUMA,Deviate Nitro,3,tempo,65,1,0.0,10.0,10.0,Great value,160
+Saucony,Endorphin Speed,4,tempo,56,2,10.0,5.0,2.5,Fair,170
+Adidas,Adizero Boston,12,tempo,29,3,5.0,0.0,2.5,Premium,160
+ASICS,Gel Nimbus,26,max_cushion,82,1,2.5,10.0,8.8,Great value,160
+Saucony,Triumph,22,max_cushion,78,2,7.5,7.5,8.8,Great value,160
+ASICS,Gel Nimbus,25,max_cushion,44,3,5.0,5.0,2.5,Fair,160
+Brooks,Glycerin,21,max_cushion,40,4,10.0,2.5,2.5,Premium,160
+HOKA,Bondi,8,max_cushion,6,5,0.0,0.0,2.5,Premium,165
+ASICS,Gel Kayano,31,stability,70,1,0.0,10.0,10.0,Great value,165
+Saucony,Guide,17,stability,57,2,6.7,6.7,3.3,Great value,140
+Hoka,Arahi,7,stability,53,3,10.0,3.3,3.3,Premium,145
+Brooks,Adrenaline GTS,23,stability,20,4,3.3,0.0,3.3,Premium,140
+Nike,Alphafly,3,carbon_racer,70,1,10.0,7.0,5.0,Great value,285
+ASICS,Metaspeed Sky+,,carbon_racer,53,2,8.0,0.0,5.0,Fair,250
+Adidas,Adizero Adios Pro,3,carbon_racer,48,3,5.0,4.0,5.0,Fair,250
+Hoka,Rocket X 2,2,carbon_racer,46,4,5.0,2.0,5.0,Premium,250
+Saucony,Endorphin Pro,4,carbon_racer,42,5,2.0,7.0,5.0,Premium,225
+ASICS,Magic Speed,4,carbon_racer,40,6,0.0,10.0,5.0,Great value,170
+Saucony,Peregrine,14,trail,59,1,10.0,0.0,8.3,Great value,140
+Brooks,Cascadia,17,trail,52,2,0.0,6.7,8.3,Great value,140
+Salomon,Speedcross,6,trail,51,3,3.3,10.0,1.7,Premium,145
+HOKA,Speedgoat,5,trail,38,4,6.7,3.3,1.7,Premium,155

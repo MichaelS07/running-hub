@@ -16,6 +16,7 @@ venv/
 data/raw/
 *.csv
 !data/shoes-seed.csv
+!data/scores.csv
 
 # OS / editor
 .DS_Store
