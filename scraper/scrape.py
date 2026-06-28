@@ -43,8 +43,10 @@ FIELDS = [
     "brand", "model", "version", "release_year", "archetype", "gender",
     "weight_g", "stack_heel_mm", "stack_forefoot_mm", "drop_mm",
     "has_plate", "plate_material", "foam_name", "lug_depth_mm",
-    "width_options", "has_medial_post", "msrp_usd", "image_url",
-    "source_url", "data_confidence", "notes",
+    "width_options", "has_medial_post", "msrp_usd",
+    "energy_return_pct", "breathability_1to5", "durability_1to5", "wet_traction",
+    "torsional_rigidity_1to5", "heel_counter_1to5", "runrepeat_score",
+    "image_url", "source_url", "data_confidence", "notes",
 ]
 
 BROWSER_HEADERS = {
@@ -60,7 +62,10 @@ EXTRACT_KEYS = [
     "brand", "model", "version", "release_year", "archetype", "gender",
     "weight_g", "stack_heel_mm", "stack_forefoot_mm", "drop_mm",
     "has_plate", "plate_material", "foam_name", "lug_depth_mm",
-    "width_options", "has_medial_post", "msrp_usd", "image_url", "notes",
+    "width_options", "has_medial_post", "msrp_usd",
+    "energy_return_pct", "breathability_1to5", "durability_1to5", "wet_traction",
+    "torsional_rigidity_1to5", "heel_counter_1to5", "runrepeat_score",
+    "image_url", "notes",
 ]
 
 SYSTEM = (
@@ -75,6 +80,12 @@ SYSTEM = (
     "trail, budget, unknown) from the specs: carbon_racer = plate + stack>=35mm + weight<240g; "
     "max_cushion = stack>=38mm and heavy; trail = lugged outsole; stability = medial post/guide "
     "rails; daily_trainer otherwise; unknown if too little data. "
+    "Several fields come from RunRepeat's lab tests — capture each as a plain number if "
+    "present, else null: `energy_return_pct` (energy return %), `breathability_1to5` "
+    "(breathability rating out of 5), `durability_1to5` (outsole/overall durability rating "
+    "out of 5), `wet_traction` (traction coefficient, roughly 0-1), `torsional_rigidity_1to5` "
+    "(stiffness rating out of 5), `heel_counter_1to5` (heel-counter stiffness out of 5), "
+    "`runrepeat_score` (RunRepeat's overall score out of 100). "
     "Put anything noteworthy or uncertain in `notes`."
 )
 
@@ -133,12 +144,21 @@ def to_row(data, url):
     return row
 
 
-def append_rows(rows):
+def load_existing_rows():
+    """Existing CSV rows keyed by source_url (for safe refresh merges)."""
+    if not SEED_CSV.exists():
+        return {}
+    with SEED_CSV.open(newline="", encoding="utf-8") as f:
+        return {r["source_url"]: r for r in csv.DictReader(f) if r.get("source_url")}
+
+
+def write_rows(rows, overwrite=False):
     SEED_CSV.parent.mkdir(parents=True, exist_ok=True)
-    new_file = not SEED_CSV.exists()
-    with SEED_CSV.open("a", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=FIELDS)
-        if new_file:
+    mode = "w" if overwrite else "a"
+    write_header = overwrite or not SEED_CSV.exists()
+    with SEED_CSV.open(mode, newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=FIELDS, restval="")
+        if write_header:
             writer.writeheader()
         writer.writerows(rows)
 
@@ -163,21 +183,26 @@ def load_done_urls():
 
 
 def main():
-    urls = load_urls(sys.argv[1:])
+    raw_args = sys.argv[1:]
+    refresh = "--refresh" in raw_args
+    urls = load_urls([a for a in raw_args if a != "--refresh"])
     if not urls:
         print(f"No URLs. Add some to {URLS_FILE} or pass them as arguments.")
         return
 
-    done = load_done_urls()
-    already = [u for u in urls if u in done]
-    urls = [u for u in urls if u not in done]
-    if already:
-        print(f"Skipping {len(already)} URL(s) already in the CSV.")
-    if not urls:
-        print("All queued URLs are already scraped — nothing to do.")
-        return
+    if refresh:
+        print(f"Refresh mode: re-scraping all {len(urls)} URL(s), overwriting the CSV.")
+    else:
+        done = load_done_urls()
+        already = [u for u in urls if u in done]
+        urls = [u for u in urls if u not in done]
+        if already:
+            print(f"Skipping {len(already)} URL(s) already in the CSV.")
+        if not urls:
+            print("All queued URLs are already scraped — nothing to do.")
+            return
     if len(urls) > 10:
-        print(f"Note: {len(urls)} new URLs queued — this will take a few minutes.")
+        print(f"Note: {len(urls)} URLs queued — this will take a few minutes.")
 
     client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY
     rows = []
@@ -196,7 +221,14 @@ def main():
             time.sleep(DELAY_SECONDS)
 
     if rows:
-        append_rows(rows)
+        if refresh:
+            # Merge over existing rows so any URL that failed this run keeps its old data.
+            merged = load_existing_rows()
+            for r in rows:
+                merged[r["source_url"]] = r
+            write_rows(list(merged.values()), overwrite=True)
+        else:
+            write_rows(rows, overwrite=False)
         print(f"\nWrote {len(rows)} row(s) to {SEED_CSV}. Review before trusting them.")
     else:
         print("\nNothing written.")
