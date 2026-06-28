@@ -1,0 +1,7 @@
+# One shoe URL per line. Lines starting with # are ignored.
+# Keep it to ~5 at a time so you can review each batch before the next.
+# Brand spec pages and RunRepeat review pages both work.
+#
+# Examples (replace with real current URLs):
+# https://www.hoka.com/en/us/mens-road/mach-6/
+# https://runrepeat.com/hoka-mach-6
