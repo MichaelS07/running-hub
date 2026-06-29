@@ -1,0 +1,35 @@
+---
+import Base from "../../layouts/Base.astro";
+import ShoeCard from "../../components/ShoeCard.astro";
+import { shoesByArchetype, CATEGORY_SLUGS } from "../../lib/shoes.js";
+const categories = shoesByArchetype();
+const total = categories.reduce((n, c) => n + c.shoes.length, 0);
+---
+<Base title="All running shoes, ranked & scored — RunHub" description="Browse every running shoe, scored and ranked within its category. Daily trainers, carbon racers, stability, max cushion and trail.">
+  <div class="wrap page-head">
+    <h1>All running shoes</h1>
+    <p>{total} shoes, each scored within its category and ranked. Pick a category to filter by price, brand and width.</p>
+  </div>
+
+  <main class="wrap">
+    <nav class="cat-nav">
+      {categories.map((cat) => (
+        <a class="cat-chip" href={`/categories/${CATEGORY_SLUGS[cat.key]}/`}>{cat.title}</a>
+      ))}
+    </nav>
+
+    {categories.map((cat) => (
+      <section class="category" id={cat.key}>
+        <h2>
+          <a class="cat-heading-link" href={`/categories/${CATEGORY_SLUGS[cat.key]}/`}>
+            {cat.title} <span class="arrow">→</span>
+          </a>
+          <span class="count">{cat.shoes.length} shoes</span>
+        </h2>
+        <div class="grid">
+          {cat.shoes.map((shoe) => <ShoeCard shoe={shoe} />)}
+        </div>
+      </section>
+    ))}
+  </main>
+</Base>

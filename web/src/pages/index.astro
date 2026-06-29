@@ -1,37 +1,69 @@
 ---
 import Base from "../layouts/Base.astro";
 import ShoeCard from "../components/ShoeCard.astro";
-import { shoesByArchetype, CATEGORY_SLUGS } from "../lib/shoes.js";
-const categories = shoesByArchetype();
-const total = categories.reduce((n, c) => n + c.shoes.length, 0);
+import { getShoes, shoesByArchetype } from "../lib/shoes.js";
+const total = getShoes().length;
+// "best in each category" — the #1 ranked shoe per archetype
+const featured = shoesByArchetype().map((c) => c.shoes[0]).filter(Boolean);
 ---
 <Base title="RunHub — Every running shoe, scored">
   <section class="hero">
     <div class="wrap">
       <h1>Every running shoe, <em>scored</em>.</h1>
-      <p class="lede">No marketing fluff. Each shoe is rated <strong>within its own category</strong> on six criteria — then ranked. {total} shoes and counting, updated as the data grows.</p>
+      <p class="lede">RunHub rates every running shoe <strong>within its own category</strong> on six criteria — ride, cushioning, weight, fit, durability and expert reviews — then ranks them. No marketing fluff, no paid placement. Just one transparent score so you can find the right shoe fast.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="/shoes/">Browse all shoes →</a>
+        <a class="btn btn-ghost" href="/guides/">Read the guides</a>
+      </div>
+      <div class="method">
+        <span><i class="dot"></i>Ride</span>
+        <span><i class="dot"></i>Cushioning</span>
+        <span><i class="dot"></i>Weight</span>
+        <span><i class="dot"></i>Comfort &amp; fit</span>
+        <span><i class="dot"></i>Durability</span>
+        <span><i class="dot"></i>Expert reviews</span>
+      </div>
     </div>
   </section>
 
   <main class="wrap">
-    <nav class="cat-nav">
-      {categories.map((cat) => (
-        <a class="cat-chip" href={`/categories/${CATEGORY_SLUGS[cat.key]}/`}>{cat.title}</a>
-      ))}
-    </nav>
-
-    {categories.map((cat) => (
-      <section class="category" id={cat.key}>
-        <h2>
-          <a class="cat-heading-link" href={`/categories/${CATEGORY_SLUGS[cat.key]}/`}>
-            {cat.title} <span class="arrow">→</span>
-          </a>
-          <span class="count">{cat.shoes.length} shoes</span>
-        </h2>
-        <div class="grid">
-          {cat.shoes.map((shoe) => <ShoeCard shoe={shoe} />)}
+    <section class="block">
+      <h2 class="block-title">How it works</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="n">01</div>
+          <h3>We gather the data</h3>
+          <p>Lab-measured specs and expert reviews for every shoe — weight, stack, ride, energy return and more.</p>
         </div>
-      </section>
-    ))}
+        <div class="step">
+          <div class="n">02</div>
+          <h3>We score within category</h3>
+          <p>A racer is judged against racers, a trainer against trainers. Six weighted criteria, one 0–100 score.</p>
+        </div>
+        <div class="step">
+          <div class="n">03</div>
+          <h3>You get a straight answer</h3>
+          <p>Ranked lists and a value rating, so you can see what's actually worth your money — and why.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="section-head">
+        <h2 class="block-title">Top rated right now</h2>
+        <a href="/shoes/">See all {total} shoes →</a>
+      </div>
+      <div class="grid">
+        {featured.map((shoe) => <ShoeCard shoe={shoe} />)}
+      </div>
+    </section>
+
+    <section class="block cta-band">
+      <div>
+        <h2 class="block-title">New to running?</h2>
+        <p>Start with our plain-English guides — how to choose your first shoe, what the jargon means, and when to replace them.</p>
+      </div>
+      <a class="btn btn-primary" href="/guides/">Browse guides →</a>
+    </section>
   </main>
 </Base>
