@@ -1,0 +1,41 @@
+---
+import { CRITERIA, scoreColor, valueClass, ARCHETYPES } from "../lib/shoes.js";
+const { shoe } = Astro.props;
+const score = Math.round(Number(shoe.runhub_score));
+const color = scoreColor(score);
+const arch = ARCHETYPES[shoe.archetype] || shoe.archetype;
+---
+<a class={`card ${shoe.category_rank === "1" ? "rank-1" : ""}`} href={`/shoes/${shoe.slug}/`}>
+  {shoe.image_url && (
+    <div class="card-photo"><img src={shoe.image_url} alt={shoe.name} loading="lazy" /></div>
+  )}
+  <div class="card-body">
+    <div class="card-top">
+      <div>
+        <div class="card-rank">#{shoe.category_rank} {arch}</div>
+        <div class="card-name">{shoe.name}</div>
+      </div>
+      <div class="score-badge">
+        <div class="score-circle" style={`border-color:${color};color:${color}`}>{score}</div>
+        <div class="score-label">score</div>
+      </div>
+    </div>
+    <div class="bars">
+      {CRITERIA.map(([key, label]) => {
+        const v = Number(shoe[key]);
+        return (
+          <div class="bar-row">
+            <span class="bar-label">{label}</span>
+            <span class="bar-track"><span class="bar-fill" style={`width:${Math.max(0, Math.min(100, v * 10))}%`}></span></span>
+            <span class="bar-val">{v.toFixed(1)}</span>
+          </div>
+        );
+      })}
+    </div>
+    <div class="card-foot">
+      <span class={`value-badge ${valueClass(shoe.value_rating)}`}>{shoe.value_rating}</span>
+      <span class="price">$<b>{shoe.msrp_usd}</b></span>
+      <span class="view-link">View →</span>
+    </div>
+  </div>
+</a>

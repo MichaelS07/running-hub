@@ -1,0 +1,26 @@
+---
+import Base from "../layouts/Base.astro";
+import ShoeCard from "../components/ShoeCard.astro";
+import { shoesByArchetype } from "../lib/shoes.js";
+const categories = shoesByArchetype();
+const total = categories.reduce((n, c) => n + c.shoes.length, 0);
+---
+<Base title="RunHub — Every running shoe, scored">
+  <section class="hero">
+    <div class="wrap">
+      <h1>Every running shoe, <em>scored</em>.</h1>
+      <p class="lede">No marketing fluff. Each shoe is rated <strong>within its own category</strong> on six criteria — then ranked. {total} shoes and counting, updated as the data grows.</p>
+    </div>
+  </section>
+
+  <main class="wrap">
+    {categories.map((cat) => (
+      <section class="category" id={cat.key}>
+        <h2>{cat.title} <span class="count">{cat.shoes.length} shoes</span></h2>
+        <div class="grid">
+          {cat.shoes.map((shoe) => <ShoeCard shoe={shoe} />)}
+        </div>
+      </section>
+    ))}
+  </main>
+</Base>

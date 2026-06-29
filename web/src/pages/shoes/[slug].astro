@@ -1,0 +1,92 @@
+---
+import Base from "../../layouts/Base.astro";
+import { getShoes, shoesByArchetype, CRITERIA, scoreColor, valueClass, ARCHETYPES } from "../../lib/shoes.js";
+
+export function getStaticPaths() {
+  return getShoes().map((shoe) => ({ params: { slug: shoe.slug }, props: { shoe } }));
+}
+
+const { shoe } = Astro.props;
+const score = Math.round(Number(shoe.runhub_score));
+const color = scoreColor(score);
+const arch = ARCHETYPES[shoe.archetype] || shoe.archetype;
+
+// peers in the same category, for context
+const peers = (shoesByArchetype().find((c) => c.key === shoe.archetype)?.shoes || []).length;
+
+const plate = shoe.has_plate === "True"
+  ? (shoe.plate_material && shoe.plate_material !== "none" ? `${shoe.plate_material} plate` : "plated")
+  : "no plate";
+
+const specs = [
+  ["Weight", shoe.weight_g && `${shoe.weight_g} g`],
+  ["Heel stack", shoe.stack_heel_mm && `${shoe.stack_heel_mm} mm`],
+  ["Forefoot stack", shoe.stack_forefoot_mm && `${shoe.stack_forefoot_mm} mm`],
+  ["Drop", shoe.drop_mm && `${shoe.drop_mm} mm`],
+  ["Foam", shoe.foam_name],
+  ["Plate", plate],
+  ["Widths", (shoe.width_options || "").replace(/;/g, ", ")],
+  ["Energy return", shoe.energy_return_pct && `${shoe.energy_return_pct}%`],
+  ["Breathability", shoe.breathability_1to5 && `${shoe.breathability_1to5}/5`],
+  ["Wet traction", shoe.wet_traction],
+  ["RunRepeat score", shoe.runrepeat_score && `${shoe.runrepeat_score}/100`],
+  ["Released", shoe.release_year],
+].filter(([, v]) => v);
+---
+<Base title={`${shoe.name} — RunHub score ${score}`} description={`${shoe.name}: RunHub score ${score}/100, ranked #${shoe.category_rank} of ${peers} ${arch.toLowerCase()}. Weight, stack, ride and value, scored within category.`}>
+  <div class="wrap detail">
+    <p class="crumbs"><a href="/">Shoes</a> &nbsp;/&nbsp; <a href={`/#${shoe.archetype}`}>{arch}</a> &nbsp;/&nbsp; {shoe.name}</p>
+
+    <div class="detail-head">
+      {shoe.image_url && (
+        <div class="detail-photo"><img src={shoe.image_url} alt={shoe.name} /></div>
+      )}
+      <div>
+        <div class="detail-arch">#{shoe.category_rank} of {peers} · {arch}</div>
+        <h1>{shoe.name}</h1>
+        <div class="detail-score">
+          <div class="score-circle" style={`border-color:${color};color:${color}`}>{score}</div>
+          <div class="meta">
+            RunHub score<br />
+            <span class={`value-badge ${valueClass(shoe.value_rating)}`}>{shoe.value_rating}</span>
+            &nbsp; <span class="price">$<b>{shoe.msrp_usd}</b></span>
+          </div>
+        </div>
+        <a class="detail-cta" href="#" rel="nofollow sponsored">Check price →</a>
+        <p class="detail-cta-note">Affiliate link slot — wired up once retailer programs are approved.</p>
+      </div>
+    </div>
+
+    <section class="panel">
+      <h3>How it scores</h3>
+      <div class="bars">
+        {CRITERIA.map(([key, label]) => {
+          const v = Number(shoe[key]);
+          return (
+            <div class="bar-row">
+              <span class="bar-label">{label}</span>
+              <span class="bar-track"><span class="bar-fill" style={`width:${Math.max(0, Math.min(100, v * 10))}%`}></span></span>
+              <span class="bar-val">{v.toFixed(1)}</span>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+
+    <section class="panel">
+      <h3>Specs</h3>
+      <div class="spec-grid">
+        {specs.map(([label, value]) => (
+          <dl class="spec"><dt>{label}</dt><dd>{value}</dd></dl>
+        ))}
+      </div>
+    </section>
+
+    {shoe.notes && (
+      <section class="panel">
+        <h3>Lab notes</h3>
+        <p class="notes">{shoe.notes}</p>
+      </section>
+    )}
+  </div>
+</Base>

@@ -5,6 +5,10 @@ __pycache__/
 .venv/
 venv/
 
+# Build output
+dist/
+.astro/
+
 # Env / secrets (affiliate keys, API tokens)
 .env
 .env.local

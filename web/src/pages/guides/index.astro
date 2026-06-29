@@ -1,0 +1,21 @@
+---
+import Base from "../../layouts/Base.astro";
+import { getCollection } from "astro:content";
+const guides = (await getCollection("guides")).sort((a, b) => a.data.order - b.data.order);
+---
+<Base title="Running guides — RunHub" description="Plain-English guides to running shoes, gear and training. No jargon, no fluff.">
+  <div class="wrap page-head">
+    <h1>Guides</h1>
+    <p>Plain-English help on shoes, gear and getting started — so you can spend less time confused and more time running.</p>
+  </div>
+  <div class="wrap">
+    <div class="guide-list">
+      {guides.map((g) => (
+        <a class="guide-card" href={`/guides/${g.slug}/`}>
+          <h3>{g.data.title}</h3>
+          <p>{g.data.description}</p>
+        </a>
+      ))}
+    </div>
+  </div>
+</Base>

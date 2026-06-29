@@ -1,0 +1,6 @@
+# Netlify build config. Netlify changes into `web/`, runs the Astro build,
+# and publishes the generated static site. Auto-builds on every git push.
+[build]
+  base = "web"
+  command = "npm run build"
+  publish = "dist"

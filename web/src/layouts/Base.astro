@@ -1,0 +1,39 @@
+---
+import "../styles/global.css";
+const { title, description = "An opinionated, transparently scored database of running shoes — rated within category on weight, ride, cushioning, fit, durability and expert reviews." } = Astro.props;
+const nav = [
+  { href: "/", label: "Shoes" },
+  { href: "/guides/", label: "Guides" },
+];
+const path = Astro.url.pathname;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-inner">
+        <a class="brand" href="/">Run<span>Hub</span></a>
+        <nav class="nav">
+          {nav.map((n) => (
+            <a href={n.href} class={path === n.href ? "active" : ""}>{n.label}</a>
+          ))}
+        </nav>
+      </div>
+    </header>
+    <slot />
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>RunHub · scores are computed within each shoe category from lab specs and expert reviews. Methodology is public.</p>
+      </div>
+    </footer>
+  </body>
+</html>
