@@ -1,7 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
 import ShoeCard from "../components/ShoeCard.astro";
-import { shoesByArchetype } from "../lib/shoes.js";
+import { shoesByArchetype, CATEGORY_SLUGS } from "../lib/shoes.js";
 const categories = shoesByArchetype();
 const total = categories.reduce((n, c) => n + c.shoes.length, 0);
 ---
@@ -14,9 +14,20 @@ const total = categories.reduce((n, c) => n + c.shoes.length, 0);
   </section>
 
   <main class="wrap">
+    <nav class="cat-nav">
+      {categories.map((cat) => (
+        <a class="cat-chip" href={`/categories/${CATEGORY_SLUGS[cat.key]}/`}>{cat.title}</a>
+      ))}
+    </nav>
+
     {categories.map((cat) => (
       <section class="category" id={cat.key}>
-        <h2>{cat.title} <span class="count">{cat.shoes.length} shoes</span></h2>
+        <h2>
+          <a class="cat-heading-link" href={`/categories/${CATEGORY_SLUGS[cat.key]}/`}>
+            {cat.title} <span class="arrow">→</span>
+          </a>
+          <span class="count">{cat.shoes.length} shoes</span>
+        </h2>
         <div class="grid">
           {cat.shoes.map((shoe) => <ShoeCard shoe={shoe} />)}
         </div>

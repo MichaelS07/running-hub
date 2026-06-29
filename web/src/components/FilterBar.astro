@@ -1,0 +1,81 @@
+---
+const { brands = [], maxPrice = 320 } = Astro.props;
+---
+<div class="filters" data-filters>
+  <label>Value
+    <select data-filter="value">
+      <option value="all">All</option>
+      <option value="great">Great value</option>
+      <option value="fair">Fair</option>
+      <option value="premium">Premium</option>
+    </select>
+  </label>
+
+  <label>Brand
+    <select data-filter="brand">
+      <option value="all">All brands</option>
+      {brands.map((b) => <option value={b.toLowerCase()}>{b}</option>)}
+    </select>
+  </label>
+
+  <label class="price">Max price <span data-price-out>${maxPrice}</span>
+    <input type="range" data-filter="price" min="100" max={maxPrice} value={maxPrice} step="5" />
+  </label>
+
+  <label class="check"><input type="checkbox" data-filter="wide" /> Wide available</label>
+
+  <label>Sort
+    <select data-filter="sort">
+      <option value="score">Score</option>
+      <option value="price-asc">Price: low → high</option>
+      <option value="price-desc">Price: high → low</option>
+    </select>
+  </label>
+
+  <span class="results"><b data-count>0</b> shoes</span>
+</div>
+
+<script>
+  const grid = document.querySelector("[data-shoe-grid]");
+  const controls = document.querySelector("[data-filters]");
+  if (grid && controls) {
+    const cards = Array.from(grid.querySelectorAll("[data-card]"));
+    const get = (n) => controls.querySelector(`[data-filter="${n}"]`);
+    const countEl = document.querySelector("[data-count]");
+    const priceOut = controls.querySelector("[data-price-out]");
+
+    function apply() {
+      const value = get("value").value;
+      const maxPrice = Number(get("price").value);
+      const wide = get("wide").checked;
+      const brand = get("brand").value;
+      const sort = get("sort").value;
+      const visible = [];
+
+      for (const c of cards) {
+        let ok = true;
+        if (value !== "all" && c.dataset.value !== value) ok = false;
+        if (Number(c.dataset.price) > maxPrice) ok = false;
+        if (wide && c.dataset.wide !== "1") ok = false;
+        if (brand !== "all" && c.dataset.brand !== brand) ok = false;
+        c.style.display = ok ? "" : "none";
+        if (ok) visible.push(c);
+      }
+
+      visible.sort((a, b) => {
+        if (sort === "price-asc") return a.dataset.price - b.dataset.price;
+        if (sort === "price-desc") return b.dataset.price - a.dataset.price;
+        return b.dataset.score - a.dataset.score;
+      });
+      visible.forEach((c) => grid.appendChild(c));
+
+      if (priceOut) priceOut.textContent = "$" + maxPrice;
+      if (countEl) countEl.textContent = visible.length;
+      let empty = document.querySelector("[data-empty]");
+      if (empty) empty.style.display = visible.length ? "none" : "";
+    }
+
+    controls.addEventListener("input", apply);
+    apply();
+  }
+</script>

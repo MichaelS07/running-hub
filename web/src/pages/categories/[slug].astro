@@ -1,0 +1,43 @@
+---
+import Base from "../../layouts/Base.astro";
+import ShoeCard from "../../components/ShoeCard.astro";
+import FilterBar from "../../components/FilterBar.astro";
+import { shoesByArchetype, CATEGORY_SLUGS, brandsOf, maxPriceOf } from "../../lib/shoes.js";
+
+export function getStaticPaths() {
+  return shoesByArchetype().map((cat) => ({
+    params: { slug: CATEGORY_SLUGS[cat.key] },
+    props: { cat },
+  }));
+}
+
+const { cat } = Astro.props;
+const brands = brandsOf(cat.shoes);
+const maxPrice = maxPriceOf(cat.shoes);
+const blurb = {
+  carbon_racer: "Plated super-shoes built for race day — scored on ride, weight and value against each other.",
+  tempo: "Lightweight, responsive trainers for tempo runs and intervals.",
+  daily_trainer: "The do-everything shoes for your everyday miles — where most runners should start.",
+  stability: "Supportive shoes for runners who want a touch of guidance.",
+  max_cushion: "Soft, protective, high-stack shoes for long and easy runs.",
+  trail: "Grippy, rugged shoes built for off-road terrain.",
+};
+---
+<Base
+  title={`Best ${cat.title} (${new Date().getFullYear()}) — ranked & scored — RunHub`}
+  description={`The best ${cat.title.toLowerCase()}, scored within category on ride, cushioning, weight, fit, durability and expert reviews. Filter by price, brand and width.`}
+>
+  <div class="wrap page-head">
+    <p class="crumbs"><a href="/">Shoes</a></p>
+    <h1>Best {cat.title}</h1>
+    <p>{blurb[cat.key] || `Every ${cat.title.toLowerCase()}, scored and ranked within its category.`}</p>
+  </div>
+
+  <main class="wrap">
+    <FilterBar brands={brands} maxPrice={maxPrice} />
+    <div class="grid" data-shoe-grid>
+      {cat.shoes.map((shoe) => <ShoeCard shoe={shoe} />)}
+    </div>
+    <p class="empty-state" data-empty style="display:none">No shoes match those filters — try widening them.</p>
+  </main>
+</Base>

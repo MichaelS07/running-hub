@@ -4,8 +4,12 @@ const { shoe } = Astro.props;
 const score = Math.round(Number(shoe.runhub_score));
 const color = scoreColor(score);
 const arch = ARCHETYPES[shoe.archetype] || shoe.archetype;
+const valKey = shoe.value_rating === "Great value" ? "great" : shoe.value_rating === "Premium" ? "premium" : "fair";
+const wide = /wide/i.test(shoe.width_options || "") ? "1" : "0";
 ---
-<a class={`card ${shoe.category_rank === "1" ? "rank-1" : ""}`} href={`/shoes/${shoe.slug}/`}>
+<a class={`card ${shoe.category_rank === "1" ? "rank-1" : ""}`} href={`/shoes/${shoe.slug}/`}
+  data-card data-brand={shoe.brand.toLowerCase()} data-price={shoe.msrp_usd}
+  data-value={valKey} data-wide={wide} data-score={score}>
   {shoe.image_url && (
     <div class="card-photo"><img src={shoe.image_url} alt={shoe.name} loading="lazy" /></div>
   )}

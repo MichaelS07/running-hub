@@ -16,6 +16,26 @@ export const ARCHETYPES = {
 };
 export const ARCH_ORDER = Object.keys(ARCHETYPES);
 
+// URL-friendly slugs for category pages (avoids colliding with /shoes/<shoe-slug>).
+export const CATEGORY_SLUGS = {
+  carbon_racer: "carbon-racers",
+  tempo: "tempo",
+  daily_trainer: "daily-trainers",
+  stability: "stability",
+  max_cushion: "max-cushion",
+  trail: "trail",
+};
+export const SLUG_TO_ARCH = Object.fromEntries(
+  Object.entries(CATEGORY_SLUGS).map(([k, v]) => [v, k])
+);
+
+export function brandsOf(shoes) {
+  return [...new Set(shoes.map((s) => s.brand))].sort();
+}
+export function maxPriceOf(shoes) {
+  return Math.ceil(Math.max(...shoes.map((s) => Number(s.msrp_usd) || 0)) / 10) * 10;
+}
+
 export const CRITERIA = [
   ["score_ride", "Ride"],
   ["score_cushioning", "Cushion"],
