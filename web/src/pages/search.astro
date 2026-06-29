@@ -1,0 +1,70 @@
+---
+import Base from "../layouts/Base.astro";
+---
+<Base title="Search running shoes — RunHub" description="Search every scored running shoe by name or brand.">
+  <div class="wrap page-head">
+    <h1 id="search-title">Search</h1>
+    <p id="search-sub">Type in the box above and press Enter, or browse <a href="/shoes/" style="color:var(--accent)">all shoes</a>.</p>
+  </div>
+  <main class="wrap">
+    <div class="grid" id="results-grid"></div>
+  </main>
+
+  <script>
+    const ARCHETYPES = {
+      carbon_racer: "Carbon Racers", tempo: "Tempo / Uptempo", daily_trainer: "Daily Trainers",
+      stability: "Stability", max_cushion: "Max Cushion", trail: "Trail",
+    };
+    const CRIT = [
+      ["score_ride", "Ride"], ["score_cushioning", "Cushion"], ["score_weight", "Weight"],
+      ["score_comfort_fit", "Comfort/fit"], ["score_durability", "Durability"], ["score_expert", "Expert"],
+    ];
+    const color = (n) => (n >= 70 ? "var(--good)" : n >= 50 ? "var(--mid)" : "var(--low)");
+    const valClass = (v) => (v === "Great value" ? "value-great" : v === "Premium" ? "value-premium" : "value-fair");
+    const valKey = (v) => (v === "Great value" ? "great" : v === "Premium" ? "premium" : "fair");
+
+    function cardHTML(s) {
+      const score = Math.round(Number(s.runhub_score));
+      const arch = ARCHETYPES[s.archetype] || s.archetype;
+      const wide = /wide/i.test(s.width_options || "") ? "1" : "0";
+      const bars = CRIT.map(([k, label]) => {
+        const v = Number(s[k]);
+        return `<div class="bar-row"><span class="bar-label">${label}</span><span class="bar-track"><span class="bar-fill" style="width:${Math.max(0, Math.min(100, v * 10))}%"></span></span><span class="bar-val">${v.toFixed(1)}</span></div>`;
+      }).join("");
+      return `<div class="card-wrap" data-card data-brand="${s.brand.toLowerCase()}" data-price="${s.msrp_usd}" data-value="${valKey(s.value_rating)}" data-wide="${wide}" data-score="${score}">
+        <button class="compare-btn" type="button" data-slug="${s.slug}" aria-label="Add ${s.name} to compare">+ Compare</button>
+        <a class="card ${s.category_rank === "1" ? "rank-1" : ""}" href="/shoes/${s.slug}/">
+          <div class="card-photo"><img src="${s.image_url}" alt="${s.name}" loading="lazy" /></div>
+          <div class="card-body">
+            <div class="card-top"><div><div class="card-rank">#${s.category_rank} ${arch}</div><div class="card-name">${s.name}</div></div>
+              <div class="score-badge"><div class="score-circle" style="border-color:${color(score)};color:${color(score)}">${score}</div><div class="score-label">score</div></div></div>
+            <div class="bars">${bars}</div>
+            <div class="card-foot"><span class="value-badge ${valClass(s.value_rating)}">${s.value_rating}</span><span class="price">$<b>${s.msrp_usd}</b></span><span class="view-link">View →</span></div>
+          </div>
+        </a>
+      </div>`;
+    }
+
+    async function run() {
+      const q = (new URLSearchParams(location.search).get("q") || "").trim();
+      const title = document.getElementById("search-title");
+      const sub = document.getElementById("search-sub");
+      const grid = document.getElementById("results-grid");
+      const box = document.getElementById("shoe-search");
+      if (box && q) box.value = q;
+      if (!q) return;
+
+      const data = await (await fetch("/shoes.json")).json();
+      const ql = q.toLowerCase();
+      const hits = data
+        .filter((s) => s.name.toLowerCase().includes(ql) || s.brand.toLowerCase().includes(ql))
+        .sort((a, b) => Number(b.runhub_score) - Number(a.runhub_score));
+
+      title.textContent = `Results for “${q}”`;
+      sub.textContent = hits.length ? `${hits.length} shoe${hits.length === 1 ? "" : "s"} found.` : "No shoes matched — try a brand or model name.";
+      grid.innerHTML = hits.map(cardHTML).join("");
+      window.runhubRefreshCompare?.();
+    }
+    run();
+  </script>
+</Base>

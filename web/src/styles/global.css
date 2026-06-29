@@ -52,6 +52,8 @@ a { color: inherit; }
 .search-results a span { flex: 1; }
 .search-results a b { color: var(--good); font-variant-numeric: tabular-nums; }
 .search-results .no-hits { padding: 10px; color: var(--muted); font-size: 14px; }
+.search-results .search-all { justify-content: center; color: var(--accent); font-weight: 600; font-size: 13px; margin-top: 2px; border-top: 1px solid var(--border); border-radius: 0; }
+.search-results .search-all:hover { background: var(--surface-2); }
 
 /* compare button on cards */
 .card-wrap { position: relative; }
