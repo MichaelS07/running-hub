@@ -7,9 +7,10 @@ const arch = ARCHETYPES[shoe.archetype] || shoe.archetype;
 const valKey = shoe.value_rating === "Great value" ? "great" : shoe.value_rating === "Premium" ? "premium" : "fair";
 const wide = /wide/i.test(shoe.width_options || "") ? "1" : "0";
 ---
-<a class={`card ${shoe.category_rank === "1" ? "rank-1" : ""}`} href={`/shoes/${shoe.slug}/`}
-  data-card data-brand={shoe.brand.toLowerCase()} data-price={shoe.msrp_usd}
+<div class="card-wrap" data-card data-brand={shoe.brand.toLowerCase()} data-price={shoe.msrp_usd}
   data-value={valKey} data-wide={wide} data-score={score}>
+<button class="compare-btn" type="button" data-slug={shoe.slug} aria-label={`Add ${shoe.name} to compare`}>+ Compare</button>
+<a class={`card ${shoe.category_rank === "1" ? "rank-1" : ""}`} href={`/shoes/${shoe.slug}/`}>
   {shoe.image_url && (
     <div class="card-photo"><img src={shoe.image_url} alt={shoe.name} loading="lazy" /></div>
   )}
@@ -43,3 +44,4 @@ const wide = /wide/i.test(shoe.width_options || "") ? "1" : "0";
     </div>
   </div>
 </a>
+</div>

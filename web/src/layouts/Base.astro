@@ -21,6 +21,10 @@ const guidesActive = path.startsWith("/guides");
     <header class="site-header">
       <div class="wrap header-inner">
         <a class="brand" href="/">Run<span>Hub</span></a>
+        <div class="search">
+          <input type="search" id="shoe-search" placeholder="Search shoes…" autocomplete="off" aria-label="Search shoes" />
+          <div class="search-results" id="search-results"></div>
+        </div>
         <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
           <span></span><span></span><span></span>
         </button>
@@ -44,13 +48,64 @@ const guidesActive = path.startsWith("/guides");
         <p>RunHub · scores are computed within each shoe category from lab specs and expert reviews. Methodology is public.</p>
       </div>
     </footer>
+
     <script>
+      // --- mobile menu ---
       const t = document.querySelector(".nav-toggle");
       const n = document.getElementById("nav");
       t?.addEventListener("click", () => {
         const open = n.classList.toggle("open");
         t.setAttribute("aria-expanded", String(open));
       });
+
+      // --- search ---
+      let _index = null;
+      const loadIndex = async () => (_index ||= await (await fetch("/shoes.json")).json());
+      const input = document.getElementById("shoe-search");
+      const results = document.getElementById("search-results");
+      input?.addEventListener("input", async () => {
+        const q = input.value.trim().toLowerCase();
+        if (!q) { results.innerHTML = ""; results.classList.remove("open"); return; }
+        const data = await loadIndex();
+        const hits = data.filter((s) => s.name.toLowerCase().includes(q)).slice(0, 8);
+        results.innerHTML = hits.length
+          ? hits.map((s) => `<a href="/shoes/${s.slug}/"><img src="${s.image_url}" alt="" /><span>${s.name}</span><b>${Math.round(s.runhub_score)}</b></a>`).join("")
+          : '<div class="no-hits">No matches</div>';
+        results.classList.add("open");
+      });
+      document.addEventListener("click", (e) => {
+        if (!e.target.closest(".search")) results?.classList.remove("open");
+      });
+
+      // --- compare selection (persists across pages) ---
+      const CKEY = "runhub-compare";
+      const readSel = () => { try { return JSON.parse(localStorage.getItem(CKEY)) || []; } catch { return []; } };
+      const writeSel = (a) => localStorage.setItem(CKEY, JSON.stringify(a));
+      function refreshCompare() {
+        const sel = readSel();
+        document.querySelectorAll(".compare-btn").forEach((b) => {
+          const on = sel.includes(b.dataset.slug);
+          b.classList.toggle("active", on);
+          b.textContent = on ? "✓ Added" : "+ Compare";
+        });
+        let tray = document.getElementById("compare-tray");
+        if (!sel.length) { tray?.remove(); return; }
+        if (!tray) { tray = document.createElement("div"); tray.id = "compare-tray"; document.body.appendChild(tray); }
+        tray.innerHTML = `<span class="ct-n">${sel.length} selected</span><a class="ct-go" href="/compare/?ids=${sel.join(",")}">Compare →</a><button class="ct-clear" type="button">Clear</button>`;
+        tray.querySelector(".ct-clear").onclick = () => { writeSel([]); refreshCompare(); };
+      }
+      document.addEventListener("click", (e) => {
+        const b = e.target.closest(".compare-btn");
+        if (!b) return;
+        e.preventDefault();
+        const sel = readSel();
+        const i = sel.indexOf(b.dataset.slug);
+        if (i >= 0) sel.splice(i, 1);
+        else { if (sel.length >= 4) { alert("You can compare up to 4 shoes at once."); return; } sel.push(b.dataset.slug); }
+        writeSel(sel);
+        refreshCompare();
+      });
+      refreshCompare();
     </script>
   </body>
 </html>

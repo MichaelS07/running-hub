@@ -26,7 +26,70 @@ a { color: inherit; }
   background: rgba(14, 17, 22, 0.85); backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
 }
-.header-inner { display: flex; align-items: center; justify-content: space-between; height: 60px; }
+.header-inner { display: flex; align-items: center; gap: 16px; height: 60px; }
+.brand { flex-shrink: 0; }
+
+/* search */
+.search { position: relative; flex: 1; max-width: 340px; }
+#shoe-search {
+  width: 100%; background: var(--surface-2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 22px; padding: 8px 16px;
+  font-size: 14px; font-family: inherit;
+}
+#shoe-search:focus { outline: none; border-color: var(--muted); }
+.search-results {
+  display: none; position: absolute; top: 44px; left: 0; right: 0; z-index: 30;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 6px; box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5); max-height: 70vh; overflow: auto;
+}
+.search-results.open { display: block; }
+.search-results a {
+  display: flex; align-items: center; gap: 10px; padding: 7px 9px; border-radius: 8px;
+  text-decoration: none; color: var(--text); font-size: 14px;
+}
+.search-results a:hover { background: var(--surface-2); }
+.search-results img { width: 40px; height: 30px; object-fit: cover; border-radius: 5px; background: #eef1f5; }
+.search-results a span { flex: 1; }
+.search-results a b { color: var(--good); font-variant-numeric: tabular-nums; }
+.search-results .no-hits { padding: 10px; color: var(--muted); font-size: 14px; }
+
+/* compare button on cards */
+.card-wrap { position: relative; }
+.compare-btn {
+  position: absolute; top: 10px; left: 10px; z-index: 3;
+  font-size: 12px; font-weight: 600; cursor: pointer;
+  background: rgba(14, 17, 22, 0.82); color: var(--text);
+  border: 1px solid var(--border); border-radius: 20px; padding: 5px 11px;
+  backdrop-filter: blur(4px);
+}
+.compare-btn:hover { border-color: var(--muted); }
+.compare-btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+
+/* compare tray */
+#compare-tray {
+  position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); z-index: 60;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 30px;
+  padding: 10px 12px 10px 20px; display: flex; align-items: center; gap: 14px;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.55);
+}
+#compare-tray .ct-n { font-size: 14px; color: var(--muted); }
+#compare-tray .ct-go { background: var(--accent); color: var(--bg); font-weight: 600; font-size: 14px; text-decoration: none; padding: 8px 16px; border-radius: 20px; }
+#compare-tray .ct-clear { background: none; border: 0; color: var(--muted); font-size: 13px; cursor: pointer; }
+#compare-tray .ct-clear:hover { color: var(--text); }
+
+/* compare table */
+.compare-table { overflow-x: auto; margin-top: 8px; }
+.compare-table table { border-collapse: collapse; width: 100%; }
+.compare-table th, .compare-table td { padding: 11px 14px; text-align: center; border-bottom: 1px solid var(--border); font-size: 14px; min-width: 130px; }
+.compare-table td.rl, .compare-table th.rl { text-align: left; color: var(--muted); font-size: 13px; position: sticky; left: 0; background: var(--bg); min-width: 120px; }
+.compare-table .ch { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.compare-table .ch img { width: 96px; height: 70px; object-fit: cover; border-radius: 8px; background: #eef1f5; }
+.compare-table .ch a { color: var(--text); text-decoration: none; font-weight: 500; font-size: 14px; }
+.compare-table .ch a:hover { color: var(--accent); }
+.compare-table .ch .rm { font-size: 11px; color: var(--muted); cursor: pointer; }
+.compare-table .ch .rm:hover { color: var(--danger, #e24b4a); }
+.compare-table td.best { color: var(--good); font-weight: 600; }
+.compare-table tr.sep td { padding: 5px; border-bottom: 0; }
 .brand {
   font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 22px;
   letter-spacing: -0.5px; color: var(--text); text-decoration: none;

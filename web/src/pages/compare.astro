@@ -1,0 +1,83 @@
+---
+import Base from "../layouts/Base.astro";
+---
+<Base title="Compare running shoes — RunHub" description="Compare running shoes side by side: scores, weight, stack, drop, foam, plate, price and value.">
+  <div class="wrap page-head">
+    <h1>Compare shoes</h1>
+    <p>Scores and specs side by side. Add shoes with the <strong>+ Compare</strong> button on any card.</p>
+  </div>
+  <main class="wrap" style="padding-bottom:40px">
+    <div id="compare-root">
+      <p class="empty-state">No shoes selected yet. Browse <a href="/shoes/" style="color:var(--accent)">the shoes</a> and tap <strong>+ Compare</strong> on the ones you want to weigh up.</p>
+    </div>
+  </main>
+
+  <script>
+    const ROWS = [
+      ["RunHub score", (s) => Math.round(Number(s.runhub_score)), true],
+      ["Value", (s) => s.value_rating],
+      ["Price", (s) => "$" + s.msrp_usd],
+      ["Category", (s) => s.archetype.replace(/_/g, " ")],
+      ["Category rank", (s) => "#" + s.category_rank],
+      ["__sep1", () => ""],
+      ["Ride", (s) => Number(s.score_ride).toFixed(1), true],
+      ["Cushion", (s) => Number(s.score_cushioning).toFixed(1), true],
+      ["Weight score", (s) => Number(s.score_weight).toFixed(1), true],
+      ["Comfort / fit", (s) => Number(s.score_comfort_fit).toFixed(1), true],
+      ["Durability", (s) => Number(s.score_durability).toFixed(1), true],
+      ["Expert", (s) => Number(s.score_expert).toFixed(1), true],
+      ["__sep2", () => ""],
+      ["Weight", (s) => (s.weight_g ? s.weight_g + " g" : "—")],
+      ["Heel stack", (s) => (s.stack_heel_mm ? s.stack_heel_mm + " mm" : "—")],
+      ["Drop", (s) => (s.drop_mm ? s.drop_mm + " mm" : "—")],
+      ["Foam", (s) => s.foam_name || "—"],
+      ["Plate", (s) => (s.has_plate === "True" ? (s.plate_material && s.plate_material !== "none" ? s.plate_material : "yes") : "no")],
+      ["Energy return", (s) => (s.energy_return_pct ? s.energy_return_pct + "%" : "—")],
+      ["Widths", (s) => (s.width_options || "—").replace(/;/g, ", ")],
+    ];
+
+    async function init() {
+      const root = document.getElementById("compare-root");
+      const params = new URLSearchParams(location.search);
+      let ids = (params.get("ids") || "").split(",").filter(Boolean);
+      if (!ids.length) { try { ids = JSON.parse(localStorage.getItem("runhub-compare")) || []; } catch {} }
+      if (!ids.length) return;
+
+      const data = await (await fetch("/shoes.json")).json();
+      const shoes = ids.map((id) => data.find((s) => s.slug === id)).filter(Boolean);
+      if (!shoes.length) return;
+
+      // highlight the best value in numeric rows
+      const cell = (label, fn, numeric) => {
+        const vals = shoes.map(fn);
+        let bestIdx = -1;
+        if (numeric) {
+          const nums = vals.map((v) => parseFloat(v));
+          const best = Math.max(...nums);
+          bestIdx = nums.indexOf(best);
+        }
+        return shoes.map((s, i) => `<td class="${i === bestIdx ? "best" : ""}">${fn(s)}</td>`).join("");
+      };
+
+      let html = '<div class="compare-table"><table><thead><tr><th class="rl"></th>';
+      html += shoes.map((s) => `<th><div class="ch"><img src="${s.image_url}" alt="${s.name}" /><a href="/shoes/${s.slug}/">${s.name}</a><span class="rm" data-rm="${s.slug}">remove</span></div></th>`).join("");
+      html += "</tr></thead><tbody>";
+      for (const [label, fn, numeric] of ROWS) {
+        if (label.startsWith("__sep")) { html += `<tr class="sep"><td colspan="${shoes.length + 1}"></td></tr>`; continue; }
+        html += `<tr><td class="rl">${label}</td>${cell(label, fn, numeric)}</tr>`;
+      }
+      html += "</tbody></table></div>";
+      root.innerHTML = html;
+
+      root.querySelectorAll(".rm").forEach((el) => {
+        el.onclick = () => {
+          let sel; try { sel = JSON.parse(localStorage.getItem("runhub-compare")) || []; } catch { sel = []; }
+          sel = sel.filter((x) => x !== el.dataset.rm);
+          localStorage.setItem("runhub-compare", JSON.stringify(sel));
+          location.search = sel.length ? "?ids=" + sel.join(",") : "";
+        };
+      });
+    }
+    init();
+  </script>
+</Base>
