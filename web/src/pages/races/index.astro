@@ -1,0 +1,32 @@
+---
+import Base from "../../layouts/Base.astro";
+import { countryList, getRaces } from "../../lib/races.js";
+const countries = countryList();
+const total = getRaces().length;
+---
+<Base title="Find a run near you — parkruns across NZ & Australia — RunHub" description="Every parkrun in New Zealand and Australia — free, weekly, timed 5km runs open to everyone. Find your local one.">
+  <section class="hero">
+    <div class="wrap">
+      <h1>Find a run <em>near you</em>.</h1>
+      <p class="lede">Start with <strong>parkrun</strong> — free, weekly, timed 5km runs open to absolutely everyone, from first-timers to club racers. {total} of them across New Zealand and Australia. Just turn up.</p>
+    </div>
+  </section>
+
+  <main class="wrap">
+    <div class="country-grid">
+      {countries.map((c) => (
+        <a class="country-card" href={`/races/${c.slug}/`}>
+          <div class="country-name">{c.name}</div>
+          <div class="country-count">{c.count} parkruns →</div>
+        </a>
+      ))}
+    </div>
+
+    <section class="cta-band" style="margin-top:40px">
+      <div>
+        <h2 class="block-title">More than parkruns, coming soon</h2>
+        <p>We're starting with parkrun because it's free, weekly and everywhere. Next up: organised races — marathons, halves, trail and fun runs — listed by city with dates and entry links.</p>
+      </div>
+    </section>
+  </main>
+</Base>

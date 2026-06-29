@@ -1,0 +1,55 @@
+---
+import Base from "../../layouts/Base.astro";
+import { racesByCountrySlug, COUNTRY_NAMES } from "../../lib/races.js";
+
+export function getStaticPaths() {
+  return Object.keys(COUNTRY_NAMES).map((slug) => ({
+    params: { country: slug },
+    props: { slug, name: COUNTRY_NAMES[slug], races: racesByCountrySlug(slug) },
+  }));
+}
+
+const { slug, name, races } = Astro.props;
+---
+<Base title={`Every parkrun in ${name} — free weekly 5km runs — RunHub`} description={`All ${races.length} parkruns in ${name} — free, weekly, timed 5km runs. Search by name or location to find your local one.`}>
+  <div class="wrap page-head">
+    <p class="crumbs"><a href="/races/">Races</a></p>
+    <h1>parkruns in {name}</h1>
+    <p>{races.length} free, weekly, timed 5km runs. Search for your town or local park.</p>
+  </div>
+
+  <main class="wrap">
+    <input type="search" id="race-search" class="race-search" placeholder="Search by name or location…" autocomplete="off" aria-label="Search races" />
+    <p class="race-count"><b data-race-count>{races.length}</b> runs</p>
+    <div class="race-list" data-race-list>
+      {races.map((r) => (
+        <a class="race-row" href={r.url} target="_blank" rel="noopener" data-race data-text={`${r.name} ${r.location}`.toLowerCase()}>
+          <div class="race-main">
+            <div class="race-name">{r.name}</div>
+            <div class="race-loc">{r.location}</div>
+          </div>
+          <div class="race-meta">{r.day} · {r.distance} · free{r.type === "junior parkrun" ? " · kids" : ""}</div>
+        </a>
+      ))}
+    </div>
+    <p class="empty-state" data-race-empty style="display:none">No runs match — try a different town or park name.</p>
+  </main>
+
+  <script>
+    const input = document.getElementById("race-search");
+    const rows = Array.from(document.querySelectorAll("[data-race]"));
+    const countEl = document.querySelector("[data-race-count]");
+    const empty = document.querySelector("[data-race-empty]");
+    input?.addEventListener("input", () => {
+      const q = input.value.trim().toLowerCase();
+      let n = 0;
+      for (const r of rows) {
+        const show = !q || r.dataset.text.includes(q);
+        r.style.display = show ? "" : "none";
+        if (show) n++;
+      }
+      if (countEl) countEl.textContent = n;
+      if (empty) empty.style.display = n ? "none" : "";
+    });
+  </script>
+</Base>

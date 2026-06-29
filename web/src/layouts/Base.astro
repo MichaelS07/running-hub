@@ -4,6 +4,7 @@ import { ARCH_ORDER, ARCHETYPES, CATEGORY_SLUGS } from "../lib/shoes.js";
 const { title, description = "An opinionated, transparently scored database of running shoes — rated within category on weight, ride, cushioning, fit, durability and expert reviews." } = Astro.props;
 const path = Astro.url.pathname;
 const shoesActive = path.startsWith("/shoes") || path.startsWith("/categories");
+const racesActive = path.startsWith("/races");
 const guidesActive = path.startsWith("/guides");
 ---
 <!doctype html>
@@ -38,6 +39,7 @@ const guidesActive = path.startsWith("/guides");
               ))}
             </div>
           </div>
+          <a class={`nav-link ${racesActive ? "active" : ""}`} href="/races/">Races</a>
           <a class={`nav-link ${guidesActive ? "active" : ""}`} href="/guides/">Guides</a>
         </nav>
       </div>

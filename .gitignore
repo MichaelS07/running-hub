@@ -21,6 +21,7 @@ data/raw/
 *.csv
 !data/shoes-seed.csv
 !data/scores.csv
+!data/races.csv
 
 # OS / editor
 .DS_Store
