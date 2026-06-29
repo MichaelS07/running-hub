@@ -1,48 +1,102 @@
-# One shoe URL per line. Lines starting with # are ignored.
-# All verified-fetchable RunRepeat pages. The scraper skips any URL already
-# in data/shoes-seed.csv, so it's safe to leave the whole list here and re-run.
-
-# --- daily trainers ---
+# RunHub scrape list. scrape.py skips any URL already in shoes-seed.csv.
+# 31 already scraped + 69 new = 100 total.
+https://runrepeat.com/hoka-mach-6
+https://runrepeat.com/asics-novablast-5
+https://runrepeat.com/nike-pegasus-41
+https://runrepeat.com/saucony-endorphin-speed-4
+https://runrepeat.com/brooks-ghost-16
 https://runrepeat.com/hoka-clifton-9
 https://runrepeat.com/asics-gel-nimbus-26
 https://runrepeat.com/saucony-ride-17
-https://runrepeat.com/brooks-ghost-16
-https://runrepeat.com/nike-pegasus-41
 https://runrepeat.com/adidas-supernova-rise
 https://runrepeat.com/mizuno-wave-rider-27
 https://runrepeat.com/puma-velocity-nitro-3
-https://runrepeat.com/hoka-mach-6
-
-# --- max cushion ---
 https://runrepeat.com/hoka-bondi-8
 https://runrepeat.com/brooks-glycerin-21
 https://runrepeat.com/asics-gel-nimbus-25
 https://runrepeat.com/saucony-triumph-22
-
-# --- stability ---
 https://runrepeat.com/asics-gel-kayano-31
 https://runrepeat.com/brooks-adrenaline-gts-23
 https://runrepeat.com/saucony-guide-17
 https://runrepeat.com/hoka-arahi-7
-
-# --- tempo / uptempo ---
-https://runrepeat.com/saucony-endorphin-speed-4
 https://runrepeat.com/adidas-adizero-boston-12
 https://runrepeat.com/asics-magic-speed-4
 https://runrepeat.com/puma-deviate-nitro-3
-
-# --- carbon racers ---
 https://runrepeat.com/nike-alphafly-3
 https://runrepeat.com/adidas-adizero-adios-pro-3
 https://runrepeat.com/saucony-endorphin-pro-4
 https://runrepeat.com/asics-metaspeed-sky-plus
 https://runrepeat.com/hoka-rocket-x-2
-
-# --- trail ---
 https://runrepeat.com/hoka-speedgoat-5
 https://runrepeat.com/salomon-speedcross-6
 https://runrepeat.com/brooks-cascadia-17
 https://runrepeat.com/saucony-peregrine-14
-
-# already scraped (kept for the catalog; auto-skipped on re-run)
-https://runrepeat.com/asics-novablast-5
+https://runrepeat.com/adidas-adizero-adios-pro-evo-3
+https://runrepeat.com/nike-vomero-plus
+https://runrepeat.com/adidas-adizero-evo-sl
+https://runrepeat.com/asics-superblast-3
+https://runrepeat.com/nike-vomero-18
+https://runrepeat.com/hoka-bondi-9
+https://runrepeat.com/new-balance-fresh-foam-x-more-v-6
+https://runrepeat.com/asics-megablast
+https://runrepeat.com/saucony-endorphin-speed-5
+https://runrepeat.com/asics-superblast-2
+https://runrepeat.com/hoka-clifton-10
+https://runrepeat.com/new-balance-1080-v-15
+https://runrepeat.com/brooks-adrenaline-gts-25
+https://runrepeat.com/nike-vomero-premium
+https://runrepeat.com/nike-vaporfly-4
+https://runrepeat.com/new-balance-fresh-foam-x-more-v5
+https://runrepeat.com/brooks-adrenaline-gts-24
+https://runrepeat.com/adidas-adizero-adios-pro-4
+https://runrepeat.com/hoka-mach-7
+https://runrepeat.com/brooks-glycerin-23
+https://runrepeat.com/puma-velocity-nitro-4
+https://runrepeat.com/nike-zoom-fly-6
+https://runrepeat.com/asics-gel-kayano-32
+https://runrepeat.com/new-balance-fuel-cell-super-comp-trainer-v-3
+https://runrepeat.com/brooks-ghost-18
+https://runrepeat.com/new-balance-fresh-foam-x-1080-v14
+https://runrepeat.com/brooks-glycerin-max
+https://runrepeat.com/saucony-endorphin-pro-5
+https://runrepeat.com/brooks-ghost-max-3
+https://runrepeat.com/brooks-glycerin-22
+https://runrepeat.com/nike-pegasus-premium
+https://runrepeat.com/brooks-ghost-17
+https://runrepeat.com/asics-gel-nimbus-28
+https://runrepeat.com/asics-gel-nimbus-27
+https://runrepeat.com/puma-fast-r-nitro-elite-3
+https://runrepeat.com/puma-deviate-nitro-elite-4
+https://runrepeat.com/new-balance-fuel-cell-super-comp-elite-v-5
+https://runrepeat.com/mizuno-neo-zen
+https://runrepeat.com/nike-zoom-x-vaporfly-next-3
+https://runrepeat.com/new-balance-fresh-foam-x-hierro-v9
+https://runrepeat.com/saucony-tempus-2
+https://runrepeat.com/nike-streakfly-2
+https://runrepeat.com/saucony-endorphin-azura
+https://runrepeat.com/hoka-arahi-8
+https://runrepeat.com/asics-metaspeed-sky-tokyo
+https://runrepeat.com/asics-superblast
+https://runrepeat.com/brooks-hyperion-max-3
+https://runrepeat.com/brooks-ghost-max-2
+https://runrepeat.com/new-balance-fuel-cell-rebel-v-5
+https://runrepeat.com/saucony-triumph-23
+https://runrepeat.com/nike-structure-plus
+https://runrepeat.com/salomon-aero-glide-4
+https://runrepeat.com/new-balance-fresh-foam-x-860-v14
+https://runrepeat.com/new-balance-fresh-foam-x-kaiha-road
+https://runrepeat.com/new-balance-fuel-cell-super-comp-elite-v-4
+https://runrepeat.com/nike-zegama-2
+https://runrepeat.com/saucony-hurricane-25
+https://runrepeat.com/saucony-ride-19
+https://runrepeat.com/new-balance-ellipse
+https://runrepeat.com/hoka-gaviota-5
+https://runrepeat.com/new-balance-fresh-foam-x-vongo-v-6
+https://runrepeat.com/saucony-endorphin-elite-2
+https://runrepeat.com/altra-experience-flow-2
+https://runrepeat.com/asics-gt-2000-14
+https://runrepeat.com/brooks-glycerin-max-2
+https://runrepeat.com/saucony-ride-18
+https://runrepeat.com/on-cloudmonster-2
+https://runrepeat.com/nike-structure-26
+https://runrepeat.com/hoka-speedgoat-6
