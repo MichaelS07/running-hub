@@ -39,14 +39,34 @@ export function getRaces() {
   return _cache;
 }
 
-export function racesByCountrySlug(slug) {
-  return getRaces().filter((r) => r.country_slug === slug);
+export function slugify(s) {
+  return (s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
-export function countryList() {
-  const counts = {};
-  for (const r of getRaces()) counts[r.country_slug] = (counts[r.country_slug] || 0) + 1;
-  return Object.keys(counts)
-    .map((slug) => ({ slug, name: COUNTRY_NAMES[slug] || slug, count: counts[slug] }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+export function racesByRegionSlug(slug) {
+  return getRaces().filter((r) => slugify(r.region) === slug);
+}
+
+// Regions grouped by country, for the /races landing.
+export function regionsByCountry() {
+  const regions = {};
+  for (const r of getRaces()) {
+    const slug = slugify(r.region);
+    (regions[slug] ||= { slug, name: r.region, country: r.country, country_slug: r.country_slug, count: 0 }).count++;
+  }
+  const byCountry = {};
+  for (const reg of Object.values(regions)) {
+    (byCountry[reg.country] ||= { country: reg.country, country_slug: reg.country_slug, regions: [] }).regions.push(reg);
+  }
+  for (const c of Object.values(byCountry)) c.regions.sort((a, b) => b.count - a.count);
+  return Object.values(byCountry).sort((a, b) => a.country.localeCompare(b.country));
+}
+
+export function allRegions() {
+  const seen = {};
+  for (const r of getRaces()) {
+    const slug = slugify(r.region);
+    seen[slug] ||= { slug, name: r.region, country: r.country };
+  }
+  return Object.values(seen);
 }

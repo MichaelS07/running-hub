@@ -1,32 +1,35 @@
 ---
 import Base from "../../layouts/Base.astro";
-import { racesByCountrySlug, COUNTRY_NAMES } from "../../lib/races.js";
+import { allRegions, racesByRegionSlug } from "../../lib/races.js";
 
 export function getStaticPaths() {
-  return Object.keys(COUNTRY_NAMES).map((slug) => ({
-    params: { country: slug },
-    props: { slug, name: COUNTRY_NAMES[slug], races: racesByCountrySlug(slug) },
+  return allRegions().map((reg) => ({
+    params: { region: reg.slug },
+    props: { reg, races: racesByRegionSlug(reg.slug).sort((a, b) => a.name.localeCompare(b.name)) },
   }));
 }
 
-const { slug, name, races } = Astro.props;
+const { reg, races } = Astro.props;
 ---
-<Base title={`Every parkrun in ${name} — free weekly 5km runs — RunHub`} description={`All ${races.length} parkruns in ${name} — free, weekly, timed 5km runs. Search by name or location to find your local one.`}>
+<Base
+  title={`parkruns in ${reg.name} — free weekly 5km runs — RunHub`}
+  description={`Every parkrun in ${reg.name}, ${reg.country} — ${races.length} free, weekly, timed 5km runs. Find your local one by town or park.`}
+>
   <div class="wrap page-head">
-    <p class="crumbs"><a href="/races/">Races</a></p>
-    <h1>parkruns in {name}</h1>
-    <p>{races.length} free, weekly, timed 5km runs. Search for your town or local park.</p>
+    <p class="crumbs"><a href="/races/">Races</a> &nbsp;/&nbsp; {reg.country}</p>
+    <h1>parkruns in {reg.name}</h1>
+    <p>{races.length} free, weekly, timed 5km runs across {reg.name}. Just turn up — all paces welcome.</p>
   </div>
 
   <main class="wrap">
-    <input type="search" id="race-search" class="race-search" placeholder="Search by name or location…" autocomplete="off" aria-label="Search races" />
+    <input type="search" id="race-search" class="race-search" placeholder="Search by town, park or name…" autocomplete="off" aria-label="Search races" />
     <p class="race-count"><b data-race-count>{races.length}</b> runs</p>
     <div class="race-list" data-race-list>
       {races.map((r) => (
-        <a class="race-row" href={r.url} target="_blank" rel="noopener" data-race data-text={`${r.name} ${r.location}`.toLowerCase()}>
+        <a class="race-row" href={r.url} target="_blank" rel="noopener" data-race data-text={`${r.name} ${r.location} ${r.city}`.toLowerCase()}>
           <div class="race-main">
             <div class="race-name">{r.name}</div>
-            <div class="race-loc">{r.location}</div>
+            <div class="race-loc">{r.location}{r.city ? ` · ${r.city}` : ""}</div>
           </div>
           <div class="race-meta">{r.day} · {r.distance} · free{r.type === "junior parkrun" ? " · kids" : ""}</div>
         </a>
