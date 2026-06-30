@@ -1,0 +1,112 @@
+---
+import Base from "../../layouts/Base.astro";
+import { getShoes, ARCHETYPES } from "../../lib/shoes.js";
+
+const num = (v) => parseFloat(v);
+const shoes = getShoes().filter((s) => s.msrp_usd && s.runhub_score);
+
+function corr(pairs) {
+  const p = pairs.filter(([a, b]) => !isNaN(a) && !isNaN(b));
+  const n = p.length;
+  const mx = p.reduce((s, x) => s + x[0], 0) / n;
+  const my = p.reduce((s, x) => s + x[1], 0) / n;
+  const cov = p.reduce((s, x) => s + (x[0] - mx) * (x[1] - my), 0);
+  const sx = Math.sqrt(p.reduce((s, x) => s + (x[0] - mx) ** 2, 0));
+  const sy = Math.sqrt(p.reduce((s, x) => s + (x[1] - my) ** 2, 0));
+  return cov / (sx * sy);
+}
+
+const scatter = shoes.map((s) => ({ x: num(s.msrp_usd), y: Math.round(num(s.runhub_score)) }));
+const cPrice = corr(shoes.map((s) => [num(s.msrp_usd), num(s.runhub_score)]));
+const cWeight = corr(shoes.map((s) => [num(s.msrp_usd), num(s.weight_g)]));
+const cEnergy = corr(shoes.map((s) => [num(s.msrp_usd), num(s.energy_return_pct)]));
+
+const byCat = {};
+shoes.forEach((s) => ((byCat[s.archetype] ||= []).push(num(s.msrp_usd))));
+const avgByCat = Object.entries(byCat)
+  .map(([k, v]) => ({ cat: ARCHETYPES[k] || k, avg: Math.round(v.reduce((a, b) => a + b, 0) / v.length) }))
+  .sort((a, b) => b.avg - a.avg);
+
+const plated = shoes.filter((s) => s.has_plate === "True").map((s) => num(s.msrp_usd));
+const nonplated = shoes.filter((s) => s.has_plate !== "True").map((s) => num(s.msrp_usd));
+const avg = (a) => Math.round(a.reduce((x, y) => x + y, 0) / a.length);
+
+const valueTop = [...shoes]
+  .sort((a, b) => num(b.runhub_score) / num(b.msrp_usd) - num(a.runhub_score) / num(a.msrp_usd))
+  .slice(0, 8)
+  .map((s) => ({ name: s.name, score: Math.round(num(s.runhub_score)), price: num(s.msrp_usd) }));
+
+const r2 = (n) => (Math.round(n * 100) / 100).toFixed(2);
+---
+<Base title="Do expensive running shoes actually score better? — RunHub" description={`We analysed ${shoes.length} running shoes: price barely predicts our quality score (r=${r2(cPrice)}). Here's what your money really buys.`}>
+  <article class="wrap article">
+    <p class="crumbs"><a href="/guides/">Guides</a></p>
+    <h1>Do expensive running shoes actually score better?</h1>
+    <p class="sub">We ran the numbers on all {shoes.length} shoes in our database. Short answer: paying more gets you a lighter, springier shoe — but barely a better one.</p>
+
+    <div class="stat-row">
+      <div class="stat"><div class="stat-n">{r2(cPrice)}</div><div class="stat-l">price ↔ our score</div></div>
+      <div class="stat"><div class="stat-n">${avg(plated) - avg(nonplated)}</div><div class="stat-l">carbon-plate premium</div></div>
+      <div class="stat"><div class="stat-n">${avgByCat[0].avg}</div><div class="stat-l">avg {avgByCat[0].cat.toLowerCase()}</div></div>
+    </div>
+
+    <h2>Price barely predicts quality</h2>
+    <p>Each dot is a shoe: its price (left–right) against its RunHub score (up–down). If pricier shoes were better, the dots would trend up to the right. They don't — the correlation is just <strong>{r2(cPrice)}</strong> (where 1.0 would be a perfect link). Plenty of $140 shoes out-score $250 ones.</p>
+    <div class="chart-box"><canvas id="c-scatter"></canvas></div>
+
+    <h2>What your money actually buys</h2>
+    <p>Price tracks two things far more strongly than overall quality: <strong>weight</strong> (correlation {r2(cWeight)} — pricier shoes are lighter) and <strong>energy return</strong> ({r2(cEnergy)} — pricier shoes are springier). That's race-day performance. For everyday running, you're often paying for grams you don't need.</p>
+
+    <h2>The most (and least) expensive categories</h2>
+    <p>Average price by category — carbon racers command the biggest premium; trail and stability shoes are the most affordable.</p>
+    <div class="chart-box"><canvas id="c-cat"></canvas></div>
+
+    <h2>The best value shoes in our database</h2>
+    <p>Quality score per dollar — the shoes that punch hardest above their price.</p>
+    <div class="chart-box"><canvas id="c-value"></canvas></div>
+
+    <p style="margin-top:28px">Want the full picture? Every shoe is scored and ranked in our <a href="/shoes/">shoe database</a>.</p>
+  </article>
+
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script is:inline define:vars={{ scatter, avgByCat, valueTop }}>
+    const grid = "rgba(149,161,176,0.15)";
+    const tick = "#95a1b0";
+    const accent = "#ff5a36";
+    const good = "#2dd4a7";
+    Chart.defaults.color = tick;
+    Chart.defaults.font.family = "Inter, system-ui, sans-serif";
+
+    new Chart(document.getElementById("c-scatter"), {
+      type: "scatter",
+      data: { datasets: [{ data: scatter, backgroundColor: accent, pointRadius: 5 }] },
+      options: {
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `$${c.parsed.x} · score ${c.parsed.y}` } } },
+        scales: {
+          x: { title: { display: true, text: "Price (USD)" }, grid: { color: grid } },
+          y: { title: { display: true, text: "RunHub score" }, grid: { color: grid } },
+        },
+      },
+    });
+
+    new Chart(document.getElementById("c-cat"), {
+      type: "bar",
+      data: { labels: avgByCat.map((d) => d.cat), datasets: [{ data: avgByCat.map((d) => d.avg), backgroundColor: accent, borderRadius: 6 }] },
+      options: {
+        indexAxis: "y",
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `$${c.parsed.x} average` } } },
+        scales: { x: { title: { display: true, text: "Average price (USD)" }, grid: { color: grid } }, y: { grid: { display: false } } },
+      },
+    });
+
+    new Chart(document.getElementById("c-value"), {
+      type: "bar",
+      data: { labels: valueTop.map((d) => d.name), datasets: [{ data: valueTop.map((d) => +(d.score / d.price * 100).toFixed(1)), backgroundColor: good, borderRadius: 6 }] },
+      options: {
+        indexAxis: "y",
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `${c.parsed.x} score per $100` } } },
+        scales: { x: { title: { display: true, text: "Score per $100" }, grid: { color: grid } }, y: { grid: { display: false } } },
+      },
+    });
+  </script>
+</Base>

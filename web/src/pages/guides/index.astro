@@ -10,6 +10,11 @@ const guides = (await getCollection("guides")).sort((a, b) => a.data.order - b.d
   </div>
   <div class="wrap">
     <div class="guide-list">
+      <a class="guide-card" href="/guides/do-expensive-running-shoes-score-better/">
+        <span class="guide-tag">Data study</span>
+        <h3>Do expensive running shoes actually score better?</h3>
+        <p>We analysed every shoe in our database. Price barely predicts quality — here's what your money really buys, with charts.</p>
+      </a>
       {guides.map((g) => (
         <a class="guide-card" href={`/guides/${g.slug}/`}>
           <h3>{g.data.title}</h3>
