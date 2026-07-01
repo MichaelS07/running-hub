@@ -1,0 +1,58 @@
+---
+import Base from "../../layouts/Base.astro";
+import { getShoes } from "../../lib/shoes.js";
+const num = (v) => parseFloat(v);
+const shoes = getShoes().filter((s) => s.weight_g && s.msrp_usd);
+const plated = shoes.filter((s) => s.has_plate === "True");
+const bare = shoes.filter((s) => s.has_plate !== "True");
+const avg = (a, f) => Math.round(a.reduce((s, x) => s + f(x), 0) / a.length);
+const avgE = (a) => { const v = a.map((s) => num(s.energy_return_pct)).filter((x) => !isNaN(x)); return Math.round(v.reduce((s, x) => s + x, 0) / v.length); };
+
+const wP = avg(plated, (s) => num(s.weight_g)), wB = avg(bare, (s) => num(s.weight_g));
+const eP = avgE(plated), eB = avgE(bare);
+const pP = avg(plated, (s) => num(s.msrp_usd)), pB = avg(bare, (s) => num(s.msrp_usd));
+
+const pt = (arr) => arr.map((s) => ({ x: num(s.weight_g), y: num(s.energy_return_pct) })).filter((p) => !isNaN(p.y));
+const platedPts = pt(plated), barePts = pt(bare);
+---
+<Base title="What a carbon plate actually gets you — the data — RunHub" description={`Plated shoes average ${wP}g and ${eP}% energy return vs ${wB}g and ${eB}% for non-plated — for about $${pP - pB} more. The data on carbon plates.`}>
+  <article class="wrap article">
+    <p class="crumbs"><a href="/guides/">Guides</a></p>
+    <h1>What a carbon plate actually gets you</h1>
+    <p class="sub">Carbon-plated "super shoes" cost a fortune. We compared the {plated.length} plated shoes in our database against the {bare.length} without — here's the real trade.</p>
+
+    <div class="stat-row">
+      <div class="stat"><div class="stat-n">{wB - wP}g</div><div class="stat-l">lighter on average</div></div>
+      <div class="stat"><div class="stat-n">+{eP - eB}%</div><div class="stat-l">more energy return</div></div>
+      <div class="stat"><div class="stat-n">+${pP - pB}</div><div class="stat-l">more expensive</div></div>
+    </div>
+
+    <h2>Lighter and springier — you can see the split</h2>
+    <p>Every shoe plotted by weight (left–right) and energy return (up–down). Plated shoes (orange) cluster in the top-left: lighter <em>and</em> bouncier. Non-plated shoes (grey) sit heavier and less efficient. The plate — plus the fancy foam that comes with it — is doing real work.</p>
+    <div class="chart-box"><canvas id="c-scatter"></canvas></div>
+
+    <h2>So is it worth it?</h2>
+    <p>For racing, yes — that {eP - eB}% energy bump and {wB - wP}g saving genuinely help on the clock. For everyday easy runs, you're paying roughly <strong>${pP - pB} extra</strong> for performance you won't feel at conversational pace. Match the shoe to the job — see the <a href="/categories/carbon-racers/">carbon racers</a> vs the <a href="/categories/daily-trainers/">daily trainers</a>.</p>
+  </article>
+
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script is:inline define:vars={{ platedPts, barePts }}>
+    Chart.defaults.color = "#95a1b0";
+    Chart.defaults.font.family = "Inter, system-ui, sans-serif";
+    const grid = "rgba(149,161,176,0.15)";
+    new Chart(document.getElementById("c-scatter"), {
+      type: "scatter",
+      data: { datasets: [
+        { label: "Carbon plated", data: platedPts, backgroundColor: "#ff5a36", pointRadius: 5 },
+        { label: "No plate", data: barePts, backgroundColor: "#6b7686", pointRadius: 5 },
+      ] },
+      options: {
+        plugins: { legend: { position: "top" }, tooltip: { callbacks: { label: (c) => `${c.parsed.x}g · ${c.parsed.y}% return` } } },
+        scales: {
+          x: { title: { display: true, text: "Weight (g)" }, grid: { color: grid } },
+          y: { title: { display: true, text: "Energy return (%)" }, grid: { color: grid } },
+        },
+      },
+    });
+  </script>
+</Base>

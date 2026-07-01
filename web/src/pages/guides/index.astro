@@ -13,7 +13,22 @@ const guides = (await getCollection("guides")).sort((a, b) => a.data.order - b.d
       <a class="guide-card" href="/guides/do-expensive-running-shoes-score-better/">
         <span class="guide-tag">Data study</span>
         <h3>Do expensive running shoes actually score better?</h3>
-        <p>We analysed every shoe in our database. Price barely predicts quality — here's what your money really buys, with charts.</p>
+        <p>Price barely predicts quality — here's what your money really buys, with charts.</p>
+      </a>
+      <a class="guide-card" href="/guides/what-a-carbon-plate-actually-gets-you/">
+        <span class="guide-tag">Data study</span>
+        <h3>What a carbon plate actually gets you</h3>
+        <p>Plated vs non-plated: the real trade in weight, energy return and price.</p>
+      </a>
+      <a class="guide-card" href="/guides/best-value-running-shoe-brands/">
+        <span class="guide-tag">Data study</span>
+        <h3>Which brands give you the most shoe for your money?</h3>
+        <p>Every brand ranked by quality score per dollar. The badge you pay for.</p>
+      </a>
+      <a class="guide-card" href="/guides/cushion-vs-weight-tradeoff/">
+        <span class="guide-tag">Data study</span>
+        <h3>Do you still have to choose between cushion and weight?</h3>
+        <p>Modern foams broke the old trade-off. The data proves it.</p>
       </a>
       {guides.map((g) => (
         <a class="guide-card" href={`/guides/${g.slug}/`}>

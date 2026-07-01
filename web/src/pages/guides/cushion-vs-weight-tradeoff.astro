@@ -1,0 +1,62 @@
+---
+import Base from "../../layouts/Base.astro";
+import { getShoes } from "../../lib/shoes.js";
+const num = (v) => parseFloat(v);
+const shoes = getShoes().filter((s) => s.stack_heel_mm && s.weight_g);
+
+function corr(pairs) {
+  const p = pairs.filter(([a, b]) => !isNaN(a) && !isNaN(b));
+  const n = p.length, mx = p.reduce((s, x) => s + x[0], 0) / n, my = p.reduce((s, x) => s + x[1], 0) / n;
+  const cov = p.reduce((s, x) => s + (x[0] - mx) * (x[1] - my), 0);
+  return cov / (Math.sqrt(p.reduce((s, x) => s + (x[0] - mx) ** 2, 0)) * Math.sqrt(p.reduce((s, x) => s + (x[1] - my) ** 2, 0)));
+}
+const cSW = corr(shoes.map((s) => [num(s.stack_heel_mm), num(s.weight_g)]));
+const r2 = (n) => (Math.round(n * 100) / 100).toFixed(2);
+
+const highStack = shoes.filter((s) => num(s.stack_heel_mm) >= 38).sort((a, b) => num(a.weight_g) - num(b.weight_g));
+const lightestBig = highStack.slice(0, 6).map((s) => ({ name: s.name, stack: num(s.stack_heel_mm), weight: num(s.weight_g) }));
+const scatter = shoes.map((s) => ({ x: num(s.stack_heel_mm), y: num(s.weight_g) }));
+const maxStack = Math.max(...shoes.map((s) => num(s.stack_heel_mm)));
+---
+<Base title="Do you have to choose between cushion and weight? — RunHub" description={`Conventional wisdom says more cushion means a heavier shoe. Across our database the link is weak (r=${r2(cSW)}) — modern foams broke the trade-off.`}>
+  <article class="wrap article">
+    <p class="crumbs"><a href="/guides/">Guides</a></p>
+    <h1>Do you still have to choose between cushion and weight?</h1>
+    <p class="sub">For years, more cushioning meant a heavier shoe. Then supercritical foams arrived. We checked whether the old trade-off still holds across {shoes.length} shoes.</p>
+
+    <div class="stat-row">
+      <div class="stat"><div class="stat-n">{r2(cSW)}</div><div class="stat-l">stack ↔ weight link</div></div>
+      <div class="stat"><div class="stat-n">{Math.round(maxStack)}mm</div><div class="stat-l">tallest stack in the data</div></div>
+      <div class="stat"><div class="stat-n">{lightestBig[0].weight}g</div><div class="stat-l">lightest {Math.round(lightestBig[0].stack)}mm shoe</div></div>
+    </div>
+
+    <h2>The trade-off has almost vanished</h2>
+    <p>If tall shoes were always heavy, this chart would climb steeply left-to-right. Instead it's nearly flat — the correlation between stack height and weight is just <strong>{r2(cSW)}</strong>. Modern foams let brands stack on protection without piling on grams.</p>
+    <div class="chart-box"><canvas id="c-scatter"></canvas></div>
+
+    <h2>The proof: featherweight max-stack shoes</h2>
+    <p>These all pack a {Math.round(lightestBig[0].stack)}mm+ stack yet weigh next to nothing — unthinkable a decade ago:</p>
+    <ul>
+      {lightestBig.map((s) => <li><strong>{s.name}</strong> — {Math.round(s.stack)}mm stack, just {s.weight}g</li>)}
+    </ul>
+    <p style="margin-top:20px">Bottom line: you can genuinely have both now. Browse by cushioning in the <a href="/shoes/">database</a>.</p>
+  </article>
+
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script is:inline define:vars={{ scatter }}>
+    Chart.defaults.color = "#95a1b0";
+    Chart.defaults.font.family = "Inter, system-ui, sans-serif";
+    const grid = "rgba(149,161,176,0.15)";
+    new Chart(document.getElementById("c-scatter"), {
+      type: "scatter",
+      data: { datasets: [{ data: scatter, backgroundColor: "#ff5a36", pointRadius: 5 }] },
+      options: {
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `${c.parsed.x}mm stack · ${c.parsed.y}g` } } },
+        scales: {
+          x: { title: { display: true, text: "Heel stack (mm)" }, grid: { color: grid } },
+          y: { title: { display: true, text: "Weight (g)" }, grid: { color: grid } },
+        },
+      },
+    });
+  </script>
+</Base>

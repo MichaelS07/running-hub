@@ -1,0 +1,59 @@
+---
+import Base from "../../layouts/Base.astro";
+import { getShoes } from "../../lib/shoes.js";
+const num = (v) => parseFloat(v);
+const shoes = getShoes().filter((s) => s.msrp_usd && s.runhub_score);
+
+const byBrand = {};
+shoes.forEach((s) => ((byBrand[s.brand] ||= []).push(s)));
+const brands = Object.entries(byBrand)
+  .filter(([, g]) => g.length >= 3)
+  .map(([brand, g]) => {
+    const price = g.reduce((s, x) => s + num(x.msrp_usd), 0) / g.length;
+    const score = g.reduce((s, x) => s + num(x.runhub_score), 0) / g.length;
+    return { brand, n: g.length, price: Math.round(price), score: Math.round(score), value: +(score / price * 100).toFixed(1) };
+  })
+  .sort((a, b) => b.value - a.value);
+
+const best = brands[0], priciest = [...brands].sort((a, b) => b.price - a.price)[0];
+---
+<Base title="The best value running shoe brands — the data — RunHub" description={`We scored every shoe by brand. ${best.brand} tops our value ranking; ${priciest.brand} is the priciest. Value = quality score per dollar.`}>
+  <article class="wrap article">
+    <p class="crumbs"><a href="/guides/">Guides</a></p>
+    <h1>Which brands give you the most shoe for your money?</h1>
+    <p class="sub">We averaged every brand's RunHub score against its price ({brands.length} brands with 3+ shoes). "Value" here means quality score per $100 spent — higher is better.</p>
+
+    <div class="stat-row">
+      <div class="stat"><div class="stat-n">{best.brand}</div><div class="stat-l">best value brand</div></div>
+      <div class="stat"><div class="stat-n">${priciest.price}</div><div class="stat-l">{priciest.brand} avg (priciest)</div></div>
+      <div class="stat"><div class="stat-n">{brands.length}</div><div class="stat-l">brands compared</div></div>
+    </div>
+
+    <h2>Value ranking — score per $100</h2>
+    <p>{best.brand} leads: strong scores without the premium price. Pricier brands like {priciest.brand} make good shoes, but you pay for the badge.</p>
+    <div class="chart-box"><canvas id="c-value"></canvas></div>
+
+    <h2>Average price by brand</h2>
+    <div class="chart-box"><canvas id="c-price"></canvas></div>
+
+    <p style="margin-top:24px">Averages hide standouts — a pricey brand can still make a bargain. Filter any brand by price on the <a href="/shoes/">shoe database</a>.</p>
+  </article>
+
+  <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script is:inline define:vars={{ brands }}>
+    Chart.defaults.color = "#95a1b0";
+    Chart.defaults.font.family = "Inter, system-ui, sans-serif";
+    const grid = "rgba(149,161,176,0.15)";
+    new Chart(document.getElementById("c-value"), {
+      type: "bar",
+      data: { labels: brands.map((b) => b.brand), datasets: [{ data: brands.map((b) => b.value), backgroundColor: "#2dd4a7", borderRadius: 6 }] },
+      options: { indexAxis: "y", plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `${c.parsed.x} score per $100` } } }, scales: { x: { title: { display: true, text: "Score per $100" }, grid: { color: grid } }, y: { grid: { display: false } } } },
+    });
+    const byPrice = [...brands].sort((a, b) => b.price - a.price);
+    new Chart(document.getElementById("c-price"), {
+      type: "bar",
+      data: { labels: byPrice.map((b) => b.brand), datasets: [{ data: byPrice.map((b) => b.price), backgroundColor: "#ff5a36", borderRadius: 6 }] },
+      options: { indexAxis: "y", plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `$${c.parsed.x} average` } } }, scales: { x: { title: { display: true, text: "Average price (USD)" }, grid: { color: grid } }, y: { grid: { display: false } } } },
+    });
+  </script>
+</Base>
