@@ -2,7 +2,9 @@
 import Base from "../layouts/Base.astro";
 import ShoeCard from "../components/ShoeCard.astro";
 import { getShoes, shoesByArchetype } from "../lib/shoes.js";
+import { getRaces } from "../lib/races.js";
 const total = getShoes().length;
+const raceCount = getRaces().length;
 // "best in each category" — the #1 ranked shoe per archetype
 const featured = shoesByArchetype().map((c) => c.shoes[0]).filter(Boolean);
 ---
@@ -13,15 +15,13 @@ const featured = shoesByArchetype().map((c) => c.shoes[0]).filter(Boolean);
       <p class="lede">RunHub rates every running shoe <strong>within its own category</strong> on six criteria — ride, cushioning, weight, fit, durability and expert reviews — then ranks them. No marketing fluff, no paid placement. Just one transparent score so you can find the right shoe fast.</p>
       <div class="cta-row">
         <a class="btn btn-primary" href="/shoes/">Browse all shoes →</a>
-        <a class="btn btn-ghost" href="/guides/">Read the guides</a>
+        <a class="btn btn-ghost" href="/how-we-score/">How we score</a>
       </div>
-      <div class="method">
-        <span><i class="dot"></i>Ride</span>
-        <span><i class="dot"></i>Cushioning</span>
-        <span><i class="dot"></i>Weight</span>
-        <span><i class="dot"></i>Comfort &amp; fit</span>
-        <span><i class="dot"></i>Durability</span>
-        <span><i class="dot"></i>Expert reviews</span>
+      <div class="hero-stats">
+        <div class="hstat"><b>{total}</b><span>shoes scored</span></div>
+        <div class="hstat"><b>6</b><span>criteria per shoe</span></div>
+        <div class="hstat"><b>{raceCount}</b><span>races listed</span></div>
+        <div class="hstat"><b>$0</b><span>paid placement</span></div>
       </div>
     </div>
   </section>
@@ -58,12 +58,17 @@ const featured = shoesByArchetype().map((c) => c.shoes[0]).filter(Boolean);
       </div>
     </section>
 
-    <section class="block cta-band">
-      <div>
-        <h2 class="block-title">New to running?</h2>
-        <p>Start with our plain-English guides — how to choose your first shoe, what the jargon means, and when to replace them.</p>
-      </div>
-      <a class="btn btn-primary" href="/guides/">Browse guides →</a>
+    <section class="block split-band">
+      <a class="split-card" href="/races/">
+        <h2 class="block-title">Find a run near you</h2>
+        <p>{raceCount} free weekly parkruns across New Zealand and Australia, by region. Just turn up.</p>
+        <span class="split-link">Browse races →</span>
+      </a>
+      <a class="split-card" href="/guides/">
+        <h2 class="block-title">Read the data studies</h2>
+        <p>Does price buy quality? What does a carbon plate really get you? We ran the numbers on our own database.</p>
+        <span class="split-link">Read the guides →</span>
+      </a>
     </section>
   </main>
 </Base>

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://neon-semifreddo-c99a26.netlify.app/sitemap-index.xml

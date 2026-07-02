@@ -1,0 +1,41 @@
+---
+import Base from "../layouts/Base.astro";
+import { getShoes, ARCHETYPES } from "../lib/shoes.js";
+const total = getShoes().length;
+const cats = Object.values(ARCHETYPES);
+---
+<Base title="How we score running shoes — RunHub" description="Our full scoring methodology: six criteria, scored within category, from lab specs and expert reviews. No paid placement, ever.">
+  <article class="wrap article">
+    <h1>How we score</h1>
+    <p class="sub">The score is the whole product, so here's exactly how it works — no black box.</p>
+
+    <h2>Shoes are only compared to their own kind</h2>
+    <p>Comparing a featherweight race shoe to a plush recovery trainer on one scale is meaningless — they have different jobs. So every shoe is first classified into a category ({cats.join(", ").toLowerCase()}), and <strong>scored only against its peers</strong>. A 90 means "one of the best daily trainers," never "better than a carbon racer."</p>
+
+    <h2>Six criteria, weighted per category</h2>
+    <ul>
+      <li><strong>Ride</strong> — lab-measured energy return: how much bounce you get back.</li>
+      <li><strong>Cushioning</strong> — measured stack height: protection underfoot.</li>
+      <li><strong>Weight</strong> — lighter scores higher, judged within category.</li>
+      <li><strong>Comfort &amp; fit</strong> — breathability, heel hold, and width availability.</li>
+      <li><strong>Durability</strong> — how the outsole and upper hold up.</li>
+      <li><strong>Expert reviews</strong> — independent expert scores, folded in transparently.</li>
+    </ul>
+    <p>Each criterion is converted to a percentile against the shoe's category peers, then weighted for what that category is <em>for</em> — weight matters more in a racer, cushioning more in a max-cushion shoe. The weighted total is the 0–100 RunHub score.</p>
+
+    <h2>Value is separate — on purpose</h2>
+    <p>A great shoe shouldn't lose quality points for costing more, and a cheap shoe shouldn't win by being cheap. The RunHub score is pure quality; the <strong>value rating</strong> (Great value / Fair / Premium) is a separate label based on score-per-dollar within the category.</p>
+
+    <h2>Where the data comes from</h2>
+    <p>Specs are lab-measured where available (weights, stack heights and drops as tested, not as advertised — brands routinely differ from the lab by several millimetres). Expert scores come from independent testing publications. Currently {total} shoes and growing.</p>
+
+    <h2>What we don't do</h2>
+    <ul>
+      <li><strong>No paid placement.</strong> A brand cannot buy a score, a rank, or a badge.</li>
+      <li><strong>No affiliate influence.</strong> If we earn a commission when you buy, it never touches the score.</li>
+      <li><strong>No fake precision.</strong> If a shoe's data is thin, we say so rather than invent a number.</li>
+    </ul>
+
+    <p style="margin-top:26px">Questions or corrections? We'd genuinely like to hear them. Meanwhile — <a href="/shoes/">browse the scores</a>.</p>
+  </article>
+</Base>
