@@ -7,6 +7,7 @@ const canonical = new URL(path, Astro.site);
 const shoesActive = path.startsWith("/shoes") || path.startsWith("/categories");
 const racesActive = path.startsWith("/races");
 const guidesActive = path.startsWith("/guides");
+const shopActive = path.startsWith("/shop");
 ---
 <!doctype html>
 <html lang="en">
@@ -54,6 +55,7 @@ const guidesActive = path.startsWith("/guides");
           </div>
           <a class={`nav-link ${racesActive ? "active" : ""}`} href="/races/">Races</a>
           <a class={`nav-link ${guidesActive ? "active" : ""}`} href="/guides/">Guides</a>
+          <a class={`nav-link ${shopActive ? "active" : ""}`} href="/shop/">Shop</a>
         </nav>
       </div>
     </header>
@@ -73,6 +75,7 @@ const guidesActive = path.startsWith("/guides");
           <h4>Explore</h4>
           <a href="/races/">Find a race</a>
           <a href="/guides/">Guides</a>
+          <a href="/shop/">Shop</a>
           <a href="/compare/">Compare shoes</a>
           <a href="/how-we-score/">How we score</a>
         </div>

@@ -1,0 +1,49 @@
+---
+import Base from "../../layouts/Base.astro";
+import { getProducts } from "../../lib/products.js";
+const products = getProducts();
+const anyLive = products.some((p) => p.live);
+---
+<Base title="Shop — running essentials that just work — RunHub" description="A small, tested range of race-day and training essentials: race belts, bib magnets, anti-chafe balm and blister patches. No gimmicks.">
+  <div class="wrap page-head">
+    <h1>The gear drawer</h1>
+    <p>A deliberately small range of race-day and training essentials — the cheap, unglamorous stuff that fixes real problems. Every product is one we'd carry ourselves. No gimmicks, no 400-item catalogue.</p>
+  </div>
+
+  <main class="wrap">
+    {!anyLive && (
+      <div class="shop-banner">
+        <b>Launching soon.</b> We're sample-testing every product before we sell it — that's the whole point. Prices shown are targets and may shift slightly at launch.
+      </div>
+    )}
+
+    <div class="grid product-grid">
+      {products.map((p) => (
+        <a class="card product-card" href={`/shop/${p.slug}/`}>
+          {p.badge && <span class="product-badge">{p.badge}</span>}
+          <div class="card-photo product-photo"><img src={p.image} alt={p.name} loading="lazy" /></div>
+          <div class="card-body">
+            <div>
+              <div class="card-rank">{p.category}</div>
+              <div class="card-name">{p.name}</div>
+              <p class="product-tagline">{p.tagline}</p>
+            </div>
+            <div class="card-foot">
+              <span class="price" style="font-size:16px">$<b>{p.price_nzd}</b> <span class="cur">NZD</span></span>
+              {p.live
+                ? <span class="view-link">Buy →</span>
+                : <span class="soon-pill">Coming soon</span>}
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+
+    <section class="cta-band" style="margin-top:40px">
+      <div>
+        <h2 class="block-title">Why so few products?</h2>
+        <p>Because most running accessories are junk, and we'd rather stock five things that work than five hundred that might. Products never appear in our shoe scores, and our scores are never for sale — <a href="/how-we-score/" style="color:var(--accent)">how we score</a>.</p>
+      </div>
+    </section>
+  </main>
+</Base>

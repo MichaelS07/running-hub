@@ -1,0 +1,71 @@
+---
+import Base from "../../layouts/Base.astro";
+import { getProducts, buyUrl } from "../../lib/products.js";
+
+export function getStaticPaths() {
+  return getProducts().map((p) => ({ params: { slug: p.slug }, props: { product: p } }));
+}
+
+const { product: p } = Astro.props;
+const others = getProducts().filter((x) => x.slug !== p.slug).slice(0, 3);
+const href = buyUrl(p, `product-${p.slug}`);
+---
+<Base title={`${p.name} — RunHub shop`} description={`${p.tagline}. ${p.description.slice(0, 140)}`}>
+  <div class="wrap detail">
+    <p class="crumbs"><a href="/shop/">Shop</a> &nbsp;/&nbsp; {p.category}</p>
+
+    <div class="detail-head">
+      <div class="detail-photo"><img src={p.image} alt={p.name} /></div>
+      <div>
+        <div class="detail-arch">{p.category}{p.badge ? ` · ${p.badge}` : ""}</div>
+        <h1>{p.name}</h1>
+        <p class="product-tagline" style="font-size:17px">{p.tagline}</p>
+        <div class="product-price">$<b>{p.price_nzd}</b> <span class="cur">NZD</span> <span class="ship-note">free NZ/AU shipping over $40</span></div>
+
+        {p.live ? (
+          <a class="detail-cta" href={href} rel="nofollow">Buy now →</a>
+        ) : (
+          <>
+            <span class="detail-cta cta-disabled" aria-disabled="true">Coming soon</span>
+            <p class="detail-cta-note">We're sample-testing this one before we sell it. It goes live once it passes.</p>
+          </>
+        )}
+      </div>
+    </div>
+
+    <section class="panel">
+      <h3>What it's for</h3>
+      <p class="notes" style="font-size:15.5px">{p.description}</p>
+    </section>
+
+    <section class="panel">
+      <h3>The details</h3>
+      <ul class="feature-list">
+        {p.featureList.map((f) => <li>{f}</li>)}
+      </ul>
+    </section>
+
+    {others.length > 0 && (
+      <section style="margin-top:34px">
+        <h3 class="block-title" style="font-size:20px; margin-bottom:16px">Goes well with</h3>
+        <div class="grid product-grid">
+          {others.map((o) => (
+            <a class="card product-card" href={`/shop/${o.slug}/`}>
+              <div class="card-photo product-photo"><img src={o.image} alt={o.name} loading="lazy" /></div>
+              <div class="card-body">
+                <div>
+                  <div class="card-rank">{o.category}</div>
+                  <div class="card-name">{o.name}</div>
+                </div>
+                <div class="card-foot">
+                  <span class="price" style="font-size:15px">$<b>{o.price_nzd}</b></span>
+                  {o.live ? <span class="view-link">Buy →</span> : <span class="soon-pill">Coming soon</span>}
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+  </div>
+</Base>
