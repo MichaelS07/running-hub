@@ -56,6 +56,7 @@ const shopActive = path.startsWith("/shop");
           <a class={`nav-link ${racesActive ? "active" : ""}`} href="/races/">Races</a>
           <a class={`nav-link ${guidesActive ? "active" : ""}`} href="/guides/">Guides</a>
           <a class={`nav-link ${shopActive ? "active" : ""}`} href="/shop/">Shop</a>
+          <a class={`nav-link ${path.startsWith("/poster") ? "active" : ""}`} href="/poster/">Poster</a>
         </nav>
       </div>
     </header>
@@ -76,6 +77,7 @@ const shopActive = path.startsWith("/shop");
           <a href="/races/">Find a race</a>
           <a href="/guides/">Guides</a>
           <a href="/shop/">Shop</a>
+          <a href="/poster/">Run posters</a>
           <a href="/compare/">Compare shoes</a>
           <a href="/how-we-score/">How we score</a>
         </div>

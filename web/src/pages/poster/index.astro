@@ -1,0 +1,267 @@
+---
+import Base from "../../layouts/Base.astro";
+---
+<Base title="Turn your run into a poster — RunHub" description="Upload the GPX from your Strava, Garmin or Apple watch and turn any run into a minimalist route poster — your race, your time, your line.">
+  <div class="wrap page-head">
+    <h1>Your run, on the wall.</h1>
+    <p>Upload the GPX from any race or run — Strava, Garmin, Apple, anything — and we'll turn the route into a minimalist poster with your time on it. Design it free below.</p>
+  </div>
+
+  <main class="wrap poster-layout">
+    <div class="poster-controls">
+      <div class="panel" style="margin-top:0">
+        <h3>1 · Your run</h3>
+        <label class="drop" id="drop-zone">
+          <input type="file" id="gpx-file" accept=".gpx" hidden />
+          <b>Drop a .gpx file here</b> or click to browse
+          <span class="drop-hint">Strava: open the activity → ⋯ → “Export GPX”</span>
+        </label>
+        <button class="btn btn-ghost btn-small" id="load-sample" type="button">No file handy? Load a sample run</button>
+        <p class="privacy-note">Your file never leaves this page — everything happens in your browser.</p>
+      </div>
+
+      <div class="panel">
+        <h3>2 · Make it yours</h3>
+        <div class="field"><label>Title</label><input type="text" id="p-title" placeholder="Christchurch Marathon" maxlength="40" /></div>
+        <div class="field"><label>Subtitle</label><input type="text" id="p-subtitle" placeholder="Christchurch, NZ" maxlength="60" /></div>
+        <div class="field-row">
+          <div class="field"><label>Time</label><input type="text" id="p-time" placeholder="3:42:11" maxlength="10" /></div>
+          <div class="field"><label>Distance</label><input type="text" id="p-dist" placeholder="42.2 km" maxlength="10" /></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Pace</label><input type="text" id="p-pace" placeholder="5:16 /km" maxlength="12" /></div>
+          <div class="field"><label>Date</label><input type="text" id="p-date" placeholder="1 June 2026" maxlength="20" /></div>
+        </div>
+        <div class="field">
+          <label>Theme</label>
+          <div class="theme-row" id="theme-row">
+            <button type="button" class="theme-dot active" data-theme="midnight" style="background:#0e1116" title="Midnight"></button>
+            <button type="button" class="theme-dot" data-theme="paper" style="background:#f5f2ec" title="Paper"></button>
+            <button type="button" class="theme-dot" data-theme="ember" style="background:#ff5a36" title="Ember"></button>
+            <button type="button" class="theme-dot" data-theme="forest" style="background:#0d2b23" title="Forest"></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>3 · Get it</h3>
+        <button class="btn btn-primary" id="download-btn" type="button" disabled>Download free (digital)</button>
+        <div class="order-soon">
+          <b>Printed &amp; shipped — coming soon.</b>
+          <p>Museum-quality A2 prints, shipped across NZ &amp; Australia. We're testing print partners now — same rule as the <a href="/shop/">shop</a>: nothing sells until our own samples pass.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="poster-preview">
+      <canvas id="poster-canvas" width="1190" height="1684"></canvas>
+    </div>
+  </main>
+
+  <script is:inline>
+    // ---------- GPX parsing ----------
+    function parseGPX(text) {
+      const doc = new DOMParser().parseFromString(text, "application/xml");
+      if (doc.querySelector("parsererror")) throw new Error("That doesn't look like a valid GPX file.");
+      const pts = [...doc.querySelectorAll("trkpt")].map((el) => ({
+        lat: parseFloat(el.getAttribute("lat")),
+        lon: parseFloat(el.getAttribute("lon")),
+        t: el.querySelector("time")?.textContent || null,
+      })).filter((p) => !isNaN(p.lat) && !isNaN(p.lon));
+      if (pts.length < 2) throw new Error("No route found in that file.");
+      const name = doc.querySelector("trk > name, metadata > name")?.textContent || "";
+      return { pts, name };
+    }
+
+    const R = 6371;
+    function haversine(a, b) {
+      const dLat = (b.lat - a.lat) * Math.PI / 180, dLon = (b.lon - a.lon) * Math.PI / 180;
+      const s = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * Math.PI / 180) * Math.cos(b.lat * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+      return 2 * R * Math.asin(Math.sqrt(s));
+    }
+
+    function fmtTime(sec) {
+      const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = Math.round(sec % 60);
+      return h ? `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}` : `${m}:${String(s).padStart(2, "0")}`;
+    }
+
+    // ---------- state ----------
+    const THEMES = {
+      midnight: { bg: "#0e1116", fg: "#e8edf3", muted: "#95a1b0", accent: "#ff5a36" },
+      paper:    { bg: "#f5f2ec", fg: "#1a1c20", muted: "#8a8f98", accent: "#d94a2b" },
+      ember:    { bg: "#ff5a36", fg: "#ffffff", muted: "rgba(255,255,255,0.75)", accent: "#0e1116" },
+      forest:   { bg: "#0d2b23", fg: "#eef3f0", muted: "#8fa89e", accent: "#2dd4a7" },
+    };
+    let state = { route: null, theme: "midnight" };
+    const $ = (id) => document.getElementById(id);
+    const fields = ["p-title", "p-subtitle", "p-time", "p-dist", "p-pace", "p-date"];
+
+    function setRoute(pts, name) {
+      const step = Math.max(1, Math.ceil(pts.length / 2000));
+      const route = pts.filter((_, i) => i % step === 0 || i === pts.length - 1);
+      state.route = route;
+      // auto-fill stats
+      let dist = 0;
+      for (let i = 1; i < pts.length; i++) dist += haversine(pts[i - 1], pts[i]);
+      $("p-dist").value = `${dist.toFixed(1)} km`;
+      if (name && !$("p-title").value) $("p-title").value = name.slice(0, 40);
+      const t0 = pts.find((p) => p.t)?.t, t1 = [...pts].reverse().find((p) => p.t)?.t;
+      if (t0 && t1) {
+        const sec = (new Date(t1) - new Date(t0)) / 1000;
+        if (sec > 0) {
+          $("p-time").value = fmtTime(sec);
+          $("p-pace").value = `${fmtTime(sec / dist)} /km`;
+          $("p-date").value = new Date(t0).toLocaleDateString("en-NZ", { day: "numeric", month: "long", year: "numeric" });
+        }
+      }
+      $("download-btn").disabled = false;
+      draw();
+    }
+
+    // ---------- drawing ----------
+    function draw(scale = 2, canvas = $("poster-canvas")) {
+      const W = 595 * scale, H = 842 * scale;
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext("2d");
+      const T = THEMES[state.theme];
+      const S = (n) => n * scale;
+
+      ctx.fillStyle = T.bg;
+      ctx.fillRect(0, 0, W, H);
+
+      // route
+      if (state.route) {
+        const pts = state.route;
+        const latM = pts.reduce((s, p) => s + p.lat, 0) / pts.length;
+        const cos = Math.cos(latM * Math.PI / 180);
+        const xs = pts.map((p) => p.lon * cos), ys = pts.map((p) => p.lat);
+        const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+        const bx = S(90), by = S(90), bw = W - S(180), bh = S(400);
+        const sc = Math.min(bw / (maxX - minX || 1e-9), bh / (maxY - minY || 1e-9));
+        const ox = bx + (bw - (maxX - minX) * sc) / 2, oy = by + (bh - (maxY - minY) * sc) / 2;
+        const px = (i) => ox + (xs[i] - minX) * sc;
+        const py = (i) => oy + (maxY - ys[i]) * sc;
+
+        ctx.strokeStyle = T.accent;
+        ctx.lineWidth = S(3.2);
+        ctx.lineJoin = ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(px(0), py(0));
+        for (let i = 1; i < pts.length; i++) ctx.lineTo(px(i), py(i));
+        ctx.stroke();
+        ctx.fillStyle = T.fg;
+        ctx.beginPath(); ctx.arc(px(0), py(0), S(5), 0, 7); ctx.fill();
+        ctx.beginPath(); ctx.arc(px(pts.length - 1), py(pts.length - 1), S(5), 0, 7); ctx.fill();
+      } else {
+        ctx.fillStyle = T.muted;
+        ctx.font = `${S(15)}px Inter, sans-serif`;
+        ctx.textAlign = "center";
+        ctx.fillText("Upload a GPX to see your route here", W / 2, S(280));
+      }
+
+      // text block
+      ctx.textAlign = "left";
+      const title = $("p-title").value || "Your run";
+      const subtitle = $("p-subtitle").value;
+      ctx.fillStyle = T.fg;
+      ctx.font = `700 ${S(38)}px "Space Grotesk", sans-serif`;
+      ctx.fillText(title, S(70), S(600), W - S(140));
+      if (subtitle) {
+        ctx.fillStyle = T.muted;
+        ctx.font = `${S(16)}px Inter, sans-serif`;
+        ctx.fillText(subtitle, S(70), S(628), W - S(140));
+      }
+      ctx.strokeStyle = T.muted; ctx.globalAlpha = 0.35; ctx.lineWidth = S(1);
+      ctx.beginPath(); ctx.moveTo(S(70), S(660)); ctx.lineTo(W - S(70), S(660)); ctx.stroke();
+      ctx.globalAlpha = 1;
+
+      // stats
+      const stats = [
+        ["TIME", $("p-time").value], ["DISTANCE", $("p-dist").value],
+        ["PACE", $("p-pace").value], ["DATE", $("p-date").value],
+      ].filter(([, v]) => v);
+      const cols = stats.length || 1;
+      stats.forEach(([label, value], i) => {
+        const x = S(70) + i * ((W - S(140)) / cols);
+        ctx.fillStyle = T.muted;
+        ctx.font = `600 ${S(10)}px Inter, sans-serif`;
+        ctx.fillText(label, x, S(695));
+        ctx.fillStyle = T.fg;
+        ctx.font = `700 ${S(21)}px "Space Grotesk", sans-serif`;
+        ctx.fillText(value, x, S(722));
+      });
+
+      ctx.fillStyle = T.muted; ctx.globalAlpha = 0.6;
+      ctx.font = `600 ${S(9)}px Inter, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.fillText("R U N H U B", W / 2, H - S(40));
+      ctx.globalAlpha = 1;
+    }
+
+    // ---------- wiring ----------
+    const zone = $("drop-zone");
+    zone.addEventListener("click", () => $("gpx-file").click());
+    $("gpx-file").addEventListener("change", (e) => e.target.files[0] && readFile(e.target.files[0]));
+    zone.addEventListener("dragover", (e) => { e.preventDefault(); zone.classList.add("over"); });
+    zone.addEventListener("dragleave", () => zone.classList.remove("over"));
+    zone.addEventListener("drop", (e) => {
+      e.preventDefault(); zone.classList.remove("over");
+      e.dataTransfer.files[0] && readFile(e.dataTransfer.files[0]);
+    });
+
+    function readFile(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try { const { pts, name } = parseGPX(reader.result); setRoute(pts, name); }
+        catch (err) { alert(err.message); }
+      };
+      reader.readAsText(file);
+    }
+
+    $("load-sample").addEventListener("click", () => {
+      // synthetic scenic loop
+      const pts = [];
+      for (let i = 0; i <= 240; i++) {
+        const t = i / 240 * Math.PI * 2;
+        pts.push({
+          lat: -43.53 + 0.02 * Math.sin(t) + 0.006 * Math.sin(3 * t + 1) + 0.002 * Math.sin(9 * t),
+          lon: 172.63 + 0.028 * Math.cos(t) + 0.008 * Math.sin(2 * t) + 0.003 * Math.cos(7 * t),
+          t: null,
+        });
+      }
+      fields.forEach((f) => ($(f).value = ""));
+      $("p-title").value = "Sample 10K";
+      $("p-subtitle").value = "Christchurch, NZ";
+      $("p-time").value = "52:30";
+      $("p-pace").value = "5:15 /km";
+      setRoute(pts, "");
+      $("p-dist").value = "10.0 km";
+      draw();
+    });
+
+    fields.forEach((f) => $(f).addEventListener("input", () => draw()));
+    document.querySelectorAll(".theme-dot").forEach((b) => {
+      b.addEventListener("click", () => {
+        document.querySelectorAll(".theme-dot").forEach((x) => x.classList.remove("active"));
+        b.classList.add("active");
+        state.theme = b.dataset.theme;
+        draw();
+      });
+    });
+
+    $("download-btn").addEventListener("click", () => {
+      const off = document.createElement("canvas");
+      draw(5, off); // ~A4 @ 360dpi / A2 @ 180dpi
+      off.toBlob((blob) => {
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "runhub-poster.png";
+        a.click();
+        URL.revokeObjectURL(a.href);
+      }, "image/png");
+      draw(); // restore preview
+    });
+
+    document.fonts.ready.then(() => draw());
+  </script>
+</Base>
