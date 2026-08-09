@@ -54,7 +54,14 @@ import Base from "../../layouts/Base.astro";
     </div>
 
     <div class="poster-preview">
+      <div class="view-toggle" id="view-toggle">
+        <button type="button" class="vt-btn active" data-view="flat">Print</button>
+        <button type="button" class="vt-btn" data-view="wall">On your wall</button>
+      </div>
       <canvas id="poster-canvas" width="1190" height="1684"></canvas>
+      <div style="text-align:center; margin-top:12px">
+        <button id="mockup-btn" class="btn btn-ghost btn-small" type="button" style="display:none">Save this mockup image</button>
+      </div>
     </div>
   </main>
 
@@ -115,7 +122,7 @@ import Base from "../../layouts/Base.astro";
         }
       }
       $("download-btn").disabled = false;
-      draw();
+      renderPreview();
     }
 
     // ---------- drawing ----------
@@ -198,6 +205,54 @@ import Base from "../../layouts/Base.astro";
       ctx.globalAlpha = 1;
     }
 
+    // ---------- preview (flat poster or framed wall mockup) ----------
+    let view = "flat";
+    function renderPreview() {
+      const canvas = $("poster-canvas");
+      if (view === "flat") { draw(2, canvas); return; }
+      const off = document.createElement("canvas");
+      draw(2, off);
+      const W = 1190, H = 1684;
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext("2d");
+      // wall + floor
+      ctx.fillStyle = "#cbc5ba"; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "#b3ac9f"; ctx.fillRect(0, H * 0.86, W, H * 0.14);
+      ctx.fillStyle = "rgba(0,0,0,0.08)"; ctx.fillRect(0, H * 0.86, W, 4);
+      // framed poster with shadow
+      const pw = W * 0.56, ph = pw * 842 / 595;
+      const px0 = (W - pw) / 2, py0 = H * 0.80 - ph;
+      const frame = 26, mat = 44;
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.38)"; ctx.shadowBlur = 60; ctx.shadowOffsetY = 30;
+      ctx.fillStyle = "#211d19";
+      ctx.fillRect(px0 - mat - frame, py0 - mat - frame, pw + 2 * (mat + frame), ph + 2 * (mat + frame));
+      ctx.restore();
+      ctx.fillStyle = "#f7f5f0";
+      ctx.fillRect(px0 - mat, py0 - mat, pw + 2 * mat, ph + 2 * mat);
+      ctx.drawImage(off, px0, py0, pw, ph);
+    }
+
+    document.querySelectorAll(".vt-btn").forEach((b) => {
+      b.addEventListener("click", () => {
+        document.querySelectorAll(".vt-btn").forEach((x) => x.classList.remove("active"));
+        b.classList.add("active");
+        view = b.dataset.view;
+        $("mockup-btn").style.display = view === "wall" ? "inline-block" : "none";
+        renderPreview();
+      });
+    });
+
+    $("mockup-btn").addEventListener("click", () => {
+      $("poster-canvas").toBlob((blob) => {
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "runhub-poster-mockup.png";
+        a.click();
+        URL.revokeObjectURL(a.href);
+      }, "image/png");
+    });
+
     // ---------- wiring ----------
     const zone = $("drop-zone");
     zone.addEventListener("click", () => $("gpx-file").click());
@@ -236,16 +291,16 @@ import Base from "../../layouts/Base.astro";
       $("p-pace").value = "5:15 /km";
       setRoute(pts, "");
       $("p-dist").value = "10.0 km";
-      draw();
+      renderPreview();
     });
 
-    fields.forEach((f) => $(f).addEventListener("input", () => draw()));
+    fields.forEach((f) => $(f).addEventListener("input", () => renderPreview()));
     document.querySelectorAll(".theme-dot").forEach((b) => {
       b.addEventListener("click", () => {
         document.querySelectorAll(".theme-dot").forEach((x) => x.classList.remove("active"));
         b.classList.add("active");
         state.theme = b.dataset.theme;
-        draw();
+        renderPreview();
       });
     });
 
@@ -259,9 +314,9 @@ import Base from "../../layouts/Base.astro";
         a.click();
         URL.revokeObjectURL(a.href);
       }, "image/png");
-      draw(); // restore preview
+      renderPreview(); // restore preview
     });
 
-    document.fonts.ready.then(() => draw());
+    document.fonts.ready.then(() => renderPreview());
   </script>
 </Base>

@@ -366,6 +366,14 @@ a { color: inherit; }
 .order-soon p { color: var(--muted); margin-top: 5px; }
 .order-soon a { color: var(--accent); }
 .poster-preview { position: sticky; top: 76px; }
+.view-toggle { display: flex; justify-content: center; gap: 0; margin-bottom: 14px; }
+.vt-btn {
+  background: var(--surface-2); color: var(--muted); border: 1px solid var(--border);
+  padding: 8px 18px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit;
+}
+.vt-btn:first-child { border-radius: 8px 0 0 8px; }
+.vt-btn:last-child { border-radius: 0 8px 8px 0; border-left: 0; }
+.vt-btn.active { background: var(--accent); color: var(--bg); border-color: var(--accent); }
 #poster-canvas {
   width: 100%; max-width: 520px; height: auto; display: block; margin: 0 auto;
   border-radius: 6px; box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
