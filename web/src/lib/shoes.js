@@ -88,6 +88,28 @@ function slugOf(sp) {
   return keyOf(sp).replace(/\|/g, "-").replace(/\s+/g, "-");
 }
 
+function howItRuns(sp, name) {
+  const stored = (sp.how_it_runs || "").trim();
+  if (stored) return stored;
+  const job = (ARCHETYPES[sp.archetype] || "running shoe").toLowerCase();
+  const bits = [];
+  if (sp.weight_g) bits.push(`${sp.weight_g} g`);
+  if (sp.stack_heel_mm) bits.push(`${sp.stack_heel_mm} mm heel stack`);
+  if (sp.drop_mm) bits.push(`${sp.drop_mm} mm drop`);
+  const head = `${name} is a ${job}${bits.length ? ` (${bits.join(", ")})` : ""}.`;
+  const notes = (sp.notes || "").trim();
+  const snippet = notes.length > 260 ? notes.slice(0, 257).replace(/\s+\S*$/, "") + "…" : notes;
+  const lab = snippet ? ` From the lab notes on file: ${snippet}` : "";
+  return `${head}${lab} This is a spec-and-lab synthesis, not a wear-test — RunHub has not logged miles in this pair.`;
+}
+
+function reviewSources(sp) {
+  const stored = (sp.review_sources || "").trim();
+  if (stored) return stored;
+  const url = (sp.source_url || "").trim();
+  return url ? `${url} · RunHub lab-notes field` : "RunHub lab-notes field in data/shoes-seed.csv";
+}
+
 let _cache = null;
 
 export function getShoes() {
@@ -99,7 +121,8 @@ export function getShoes() {
 
   _cache = specs.map((sp) => {
     const sc = scoreByKey[keyOf(sp)] || {};
-    return { ...sp, ...sc, slug: slugOf(sp), name: displayName(sp) };
+    const name = displayName(sp);
+    return { ...sp, ...sc, slug: slugOf(sp), name, how_it_runs: howItRuns(sp, name), review_sources: reviewSources(sp) };
   });
   return _cache;
 }
