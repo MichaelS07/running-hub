@@ -10,8 +10,8 @@ const { shoe } = Astro.props;
 const score = Math.round(Number(shoe.runhub_score));
 const color = scoreColor(score);
 const arch = ARCHETYPES[shoe.archetype] || shoe.archetype;
+const buyUrl = (shoe.affiliate_url || "").trim();
 
-// peers in the same category, for context
 const peers = (shoesByArchetype().find((c) => c.key === shoe.archetype)?.shoes || []).length;
 
 const plate = shoe.has_plate === "True"
@@ -52,10 +52,28 @@ const specs = [
             &nbsp; <span class="price">$<b>{shoe.msrp_usd}</b></span>
           </div>
         </div>
-        <a class="detail-cta" href="#" rel="nofollow sponsored">Check price →</a>
-        <p class="detail-cta-note">Affiliate link slot — wired up once retailer programs are approved.</p>
+        {buyUrl ? (
+          <a class="detail-cta" href={buyUrl} rel="nofollow sponsored">Check price →</a>
+        ) : (
+          <span class="detail-cta detail-cta-disabled" aria-disabled="true">Check price</span>
+        )}
+        <p class="detail-cta-note">
+          {buyUrl
+            ? "Affiliate link. It never affects the score."
+            : "Buy links go live once an affiliate program is connected. Scores are never for sale."}
+        </p>
       </div>
     </div>
+
+    {shoe.how_it_runs && (
+      <section class="panel">
+        <h3>How it runs</h3>
+        <p class="notes">{shoe.how_it_runs}</p>
+        {shoe.review_sources && (
+          <p class="review-sources"><strong>Sources:</strong> {shoe.review_sources}</p>
+        )}
+      </section>
+    )}
 
     <section class="panel">
       <h3>How it scores</h3>
@@ -90,3 +108,16 @@ const specs = [
     )}
   </div>
 </Base>
+
+<style>
+  .detail-cta-disabled {
+    opacity: 0.45;
+    pointer-events: none;
+    cursor: not-allowed;
+  }
+  .review-sources {
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+    color: var(--muted, #6b7280);
+  }
+</style>

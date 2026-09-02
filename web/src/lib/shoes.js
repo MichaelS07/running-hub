@@ -16,7 +16,6 @@ export const ARCHETYPES = {
 };
 export const ARCH_ORDER = Object.keys(ARCHETYPES);
 
-// URL-friendly slugs for category pages (avoids colliding with /shoes/<shoe-slug>).
 export const CATEGORY_SLUGS = {
   carbon_racer: "carbon-racers",
   tempo: "tempo",
@@ -80,6 +79,15 @@ function displayName(r) {
   return `${r.brand} ${model}${tail}`.trim();
 }
 
+function slugOf(sp) {
+  const tail = (sp.source_url || "").split("/").filter(Boolean).pop() || "";
+  const cleaned = tail.replace(/\.html$/i, "");
+  if (cleaned && /^[a-z0-9-]+$/i.test(cleaned) && cleaned.length > 6 && !/^\d+$/.test(cleaned)) {
+    return cleaned.toLowerCase();
+  }
+  return keyOf(sp).replace(/\|/g, "-").replace(/\s+/g, "-");
+}
+
 let _cache = null;
 
 export function getShoes() {
@@ -91,9 +99,7 @@ export function getShoes() {
 
   _cache = specs.map((sp) => {
     const sc = scoreByKey[keyOf(sp)] || {};
-    const slug = (sp.source_url || "").split("/").filter(Boolean).pop()
-      || keyOf(sp).replace(/\|/g, "-");
-    return { ...sp, ...sc, slug, name: displayName(sp) };
+    return { ...sp, ...sc, slug: slugOf(sp), name: displayName(sp) };
   });
   return _cache;
 }
