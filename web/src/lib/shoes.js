@@ -114,7 +114,12 @@ let _cache = null;
 
 export function getShoes() {
   if (_cache) return _cache;
-  const specs = parseCSV(fs.readFileSync(path.join(DATA_DIR, "shoes-seed.csv"), "utf8"));
+  function loadCsv(name) {
+    const file = path.join(DATA_DIR, name);
+    if (!fs.existsSync(file)) return [];
+    return parseCSV(fs.readFileSync(file, "utf8"));
+  }
+  const specs = [...loadCsv("shoes-seed.csv"), ...loadCsv("new-shoes.csv")];
   const scores = parseCSV(fs.readFileSync(path.join(DATA_DIR, "scores.csv"), "utf8"));
   const scoreByKey = {};
   scores.forEach((s) => (scoreByKey[keyOf(s)] = s));
