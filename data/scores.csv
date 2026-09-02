@@ -44,9 +44,12 @@ ASICS,Gel Nimbus,26,max_cushion,30,21,1.3,3.0,3.0,6.1,5.0,0.2,Premium,high,160,h
 Brooks,Ghost Max 3,3,max_cushion,24,22,2.2,1.3,3.0,6.1,2.5,1.1,Premium,high,160,https://cdn.runrepeat.com/storage/gallery/product_primary/40935/brooks-ghost-max-3-23740532-720.jpg
 ASICS,Gel Nimbus 25,25,max_cushion,21,23,0.4,0.9,5.4,3.9,5.0,0.2,Premium,high,160,https://cdn.runrepeat.com/storage/gallery/product_primary/39530/asics-gel-nimbus-25-21232027-720.jpg
 Hoka,Bondi,8,max_cushion,16,24,1.7,0.0,0.4,2.6,5.0,1.1,Premium,high,165,https://cdn.runrepeat.com/storage/gallery/product_primary/38861/hoka-bondi-8-21232045-720.jpg
-Saucony,Endorphin Speed,5,tempo,85,1,10.0,10.0,5.0,10.0,5.0,10.0,Great value,high,175,https://cdn.runrepeat.com/storage/gallery/product_primary/40830/saucony-endorphin-speed-5-23261039-720.jpg
-Saucony,Endorphin Speed,4,tempo,60,2,5.0,5.0,10.0,5.0,5.0,5.0,Fair,high,170,https://cdn.runrepeat.com/storage/gallery/product_primary/40335/saucony-endorphin-speed-4-21350768-720.jpg
-Adidas,Adizero Boston,12,tempo,5,3,0.0,0.0,0.0,0.0,5.0,0.0,Premium,high,160,https://cdn.runrepeat.com/storage/gallery/product_primary/39959/adidas-adizero-boston-12-21158467-720.jpg
+Saucony,Endorphin Speed,5,tempo,83,1,10.0,10.0,4.0,10.0,5.0,10.0,Great value,high,175,https://cdn.runrepeat.com/storage/gallery/product_primary/40830/saucony-endorphin-speed-5-23261039-720.jpg
+Saucony,Endorphin Speed,4,tempo,58,2,5.0,8.0,6.0,8.0,5.0,5.0,Fair,high,170,https://cdn.runrepeat.com/storage/gallery/product_primary/40335/saucony-endorphin-speed-4-21350768-720.jpg
+New Balance,FuelCell Rebel,v5,tempo,52,3,5.0,4.0,8.0,1.0,5.0,5.0,Great value,medium,140,
+Saucony,Kinvara,15,tempo,51,4,5.0,0.0,10.0,1.0,5.0,5.0,Fair,medium,140,
+Adidas,Adizero Boston,13,tempo,44,5,5.0,6.0,2.0,4.0,5.0,5.0,Premium,medium,160,
+Adidas,Adizero Boston,12,tempo,12,6,0.0,2.0,0.0,6.0,5.0,0.0,Premium,high,160,https://cdn.runrepeat.com/storage/gallery/product_primary/39959/adidas-adizero-boston-12-21158467-720.jpg
 Brooks,Adrenaline GTS,24,stability,64,1,7.5,6.2,3.8,10.0,5.0,4.4,Great value,high,140,https://cdn.runrepeat.com/storage/gallery/product_primary/40538/brooks-adrenaline-gts-24-2-22723083-720.jpg
 ASICS,Gel Kayano,32,stability,59,2,0.0,10.0,1.2,8.1,3.8,7.5,Great value,high,165,https://cdn.runrepeat.com/storage/gallery/product_primary/40809/asics-gel-kayano-32-23240127-720.jpg
 Saucony,Tempus,2,stability,59,3,10.0,5.0,8.8,3.1,0.0,10.0,Great value,high,160,https://cdn.runrepeat.com/storage/gallery/product_primary/40521/saucony-tempus-2-24052511-720.jpg
@@ -73,8 +76,11 @@ Saucony,Endorphin Pro,4,carbon_racer,28,14,1.2,6.2,0.6,9.1,5.0,3.1,Premium,high,
 Hoka,Rocket X 2,2,carbon_racer,26,15,3.1,4.4,1.9,1.6,5.0,1.9,Premium,high,250,https://cdn.runrepeat.com/storage/gallery/product_primary/39714/hoka-rocket-x-2-21208105-720.jpg
 ASICS,Metaspeed Sky+,,carbon_racer,19,16,0.6,0.6,3.8,4.1,5.0,0.9,Premium,high,250,https://cdn.runrepeat.com/storage/gallery/product_primary/38635/asics-metaspeed-sky-21232018-720.jpg
 ASICS,Magic Speed,4,carbon_racer,17,17,0.0,9.4,0.0,10.0,5.0,0.0,Premium,high,170,https://cdn.runrepeat.com/storage/gallery/product_primary/40419/asics-magic-speed-4-21784091-720.jpg
-New Balance,Fresh Foam X Hierro,v9,trail,75,1,10.0,10.0,2.5,7.5,10.0,5.0,Great value,high,155,https://cdn.runrepeat.com/storage/gallery/product_primary/40693/new-balance-fresh-foam-x-hierro-9-22723086-720.jpg
-Hoka,Speedgoat,5,trail,59,2,3.3,2.5,7.5,3.8,5.0,10.0,Great value,high,155,https://cdn.runrepeat.com/storage/gallery/product_primary/38038/hoka-speedgoat-5-21236516-720.jpg
-Salomon,Speedcross,6,trail,47,3,0.0,7.5,5.0,0.0,5.0,7.5,Fair,high,145,https://cdn.runrepeat.com/storage/gallery/product_primary/38918/salomon-speedcross-6-21230510-720.jpg
-Brooks,Cascadia,17,trail,38,4,5.0,5.0,0.0,10.0,5.0,0.0,Premium,medium,140,https://cdn.runrepeat.com/storage/gallery/product_primary/39683/brooks-cascadia-17-21189514-720.jpg
-Saucony,Peregrine,14,trail,31,5,6.7,0.0,10.0,3.8,0.0,2.5,Premium,high,140,https://cdn.runrepeat.com/storage/gallery/product_primary/40312/saucony-peregrine-14-21408357-720.jpg
+New Balance,Fresh Foam X Hierro,v9,trail,75,1,10.0,8.6,2.9,8.6,10.0,5.0,Great value,high,155,https://cdn.runrepeat.com/storage/gallery/product_primary/40693/new-balance-fresh-foam-x-hierro-9-22723086-720.jpg
+Hoka,Speedgoat,5,trail,62,2,3.3,1.4,8.6,6.4,5.0,10.0,Great value,high,155,https://cdn.runrepeat.com/storage/gallery/product_primary/38038/hoka-speedgoat-5-21236516-720.jpg
+Hoka,Speedgoat,6,trail,53,3,5.0,10.0,6.4,0.7,5.0,5.0,Fair,medium,155,
+Salomon,Speedcross,6,trail,50,4,0.0,7.1,4.3,3.6,5.0,7.5,Great value,high,145,https://cdn.runrepeat.com/storage/gallery/product_primary/38918/salomon-speedcross-6-21230510-720.jpg
+Saucony,Peregrine,15,trail,43,5,5.0,2.9,6.4,0.7,5.0,5.0,Fair,medium,140,
+Brooks,Cascadia,18,trail,43,6,5.0,4.3,1.4,3.6,5.0,5.0,Premium,medium,150,
+Brooks,Cascadia,17,trail,39,7,5.0,5.7,0.0,10.0,5.0,0.0,Premium,medium,140,https://cdn.runrepeat.com/storage/gallery/product_primary/39683/brooks-cascadia-17-21189514-720.jpg
+Saucony,Peregrine,14,trail,35,8,6.7,0.0,10.0,6.4,0.0,2.5,Premium,high,140,https://cdn.runrepeat.com/storage/gallery/product_primary/40312/saucony-peregrine-14-21408357-720.jpg
